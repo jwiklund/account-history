@@ -14,7 +14,15 @@ endif
 all: dev
 
 dev: $(shell bin/has reflex)
-> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/mh/main.go -app.assets=cmd/mh/assets
+> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/mh/main.go -app.assets=cmd/mh/assets -app.accounts=example.txt
+
+.PHONY: test
+test:
+> go test ./...
+
+.PHONY: test-w
+test-w: $(shell bin/has reflex)
+> reflex -d none -s -R vendor. -r \.go$$ -- go test ./...
 
 install-reflex:
 > go install github.com/cespare/reflex@latest && touch install-reflex

@@ -6,6 +6,8 @@ import (
 	"io"
 	"strings"
 	"text/template"
+
+	"github.com/jwiklund/money-history/history"
 )
 
 type Renderer interface {
@@ -16,13 +18,16 @@ func New(assets string) (Renderer, error) {
 	if assets == "" {
 		return nil, errors.New("Embedded assets not implemented yet")
 	}
-	result := DebugAssets{assets}
+	result := DebugAssets{
+		assetDir: assets,
+	}
 	err := result.check()
 	return result, err
 }
 
 type DebugAssets struct {
-	assets string
+	accounts history.Accounts
+	assetDir string
 }
 
 func (d DebugAssets) check() error {
@@ -30,7 +35,7 @@ func (d DebugAssets) check() error {
 }
 
 func (d DebugAssets) Render(name string, wr io.Writer, data any) error {
-	namedTemplate, err := template.ParseFiles(strings.Join([]string{d.assets, name}, "/"))
+	namedTemplate, err := template.ParseFiles(strings.Join([]string{d.assetDir, name}, "/"))
 	if err != nil {
 		return fmt.Errorf("could not parse %s: %w", name, err)
 	}
