@@ -1,46 +1,34 @@
+{{define "index.body.html"}}
+<body class="container" hx-boost="true">
+  {{template "nav.html" "index"}}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Year</th>
+        <th scope="col">Start</th>
+        <th scope="col">End</th>
+        <th scope="col">Change</th>
+        <th scope="col">Increase</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <th scope="row">{{.Year}}</th>
+        <td>{{.Start}}</td>
+        <td>{{.End}}</td>
+        <td>{{.Change}}</td>
+        <td>{{.Increase}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</body>
+{{end}}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>money history</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-  </head>
-  <body class="container" hx-boost="true">
-    <nav class="navbar bg-body-tertiary navbar-expand-lg">
-      <a class="navbar-brand">History</a>
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/edit">Edit</a>
-        </li>
-      </ul>
-    </nav>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Year</th>
-          <th scope="col">Start</th>
-          <th scope="col">End</th>
-          <th scope="col">Change</th>
-          <th scope="col">Increase</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range .}}
-        <tr>
-          <th scope="row">{{.Year}}</th>
-          <td>{{.Start}}</td>
-          <td>{{.End}}</td>
-          <td>{{.Change}}</td>
-          <td>{{.Increase}}</td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
-  </body>
+  {{template "head.html"}}
+  {{template "index.body.html" .}}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/htmx.org@1.9.3"></script>
 </html>

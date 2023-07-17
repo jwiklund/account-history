@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -35,10 +36,14 @@ func (d DebugAssets) check() error {
 }
 
 func (d DebugAssets) Render(name string, wr io.Writer, data any) error {
-	namedTemplate, err := template.ParseFiles(strings.Join([]string{d.assetDir, name}, "/"))
+	matches, err := filepath.Glob(strings.Join([]string{d.assetDir, "*.html"}, "/"))
 	if err != nil {
-		return fmt.Errorf("could not parse %s: %w", name, err)
+		return fmt.Errorf("could not glob templates: %w", err)
 	}
-	err = namedTemplate.Execute(wr, data)
+	namedTemplate, err := template.ParseFiles(matches...)
+	if err != nil {
+		return fmt.Errorf("could not parse templates: %w", err)
+	}
+	err = namedTemplate.ExecuteTemplate(wr, name, data)
 	return err
 }
