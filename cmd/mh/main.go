@@ -41,6 +41,11 @@ func main() {
 			fmt.Fprintf(w, "Could not render index: %v", err)
 		}
 	})
+	http.HandleFunc("/edit", func(w http.ResponseWriter, r *http.Request) {
+		if err := renderer.Render("edit.html", w, accounts.Current()); err != nil {
+			fmt.Fprintf(w, "Couild not render edit: %v", err)
+		}
+	})
 	fmt.Println("Listening on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }

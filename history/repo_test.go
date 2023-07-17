@@ -109,3 +109,108 @@ func TestSummary(t *testing.T) {
 		},
 	}, summary)
 }
+
+func TestCurrent(t *testing.T) {
+	accounts := &Accounts{
+		[]Account{
+			{
+				Name: "name-0",
+				History: []History{
+					{
+						Date:   "2022",
+						Amount: 0,
+						Change: 0,
+					},
+				},
+			},
+			{
+				Name: "name-0-2",
+				History: []History{
+					{
+						Date:   "2022",
+						Amount: 1,
+						Change: 1,
+					},
+					{
+						Date:   "2023",
+						Amount: 0,
+						Change: -1,
+					},
+				},
+			},
+			{
+				Name: "name-1",
+				History: []History{
+					{
+						Date:   "2022",
+						Amount: 1,
+						Change: 1,
+					},
+				},
+			},
+			{
+				Name: "name-2",
+				History: []History{
+					{
+						Date:   "2023",
+						Amount: 2,
+						Change: 0,
+					},
+				},
+			},
+			{
+				Name: "name-3",
+				History: []History{
+					{
+						Date:   "2022",
+						Amount: 2,
+						Change: 2,
+					},
+					{
+						Date:   "2023",
+						Amount: 2,
+						Change: 0,
+					},
+				},
+			},
+		},
+	}
+	summary := accounts.Current()
+	assert.Equal(t, []CurrentEntry{
+		{
+			Name:     "name-0-2",
+			Start:    1,
+			End:      0,
+			Change:   -1,
+			Increase: 0,
+		},
+		{
+			Name:     "name-1",
+			Start:    1,
+			End:      1,
+			Change:   0,
+			Increase: 0,
+		},
+		{
+			Name:     "name-2",
+			Start:    0,
+			End:      2,
+			Change:   0,
+			Increase: 2,
+		},
+		{
+			Name:     "name-3",
+			Start:    2,
+			End:      2,
+			Change:   0,
+			Increase: 0,
+		},
+		{
+			Name:     "name-0",
+			Start:    0,
+			End:      0,
+			Change:   0,
+			Increase: 0,
+		},
+	}, summary)
+}

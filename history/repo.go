@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -94,4 +95,64 @@ func (a *Accounts) Summary() []SummaryEntry {
 		result = append(result, *entry)
 	}
 	return result
+}
+
+type CurrentEntry struct {
+	Name     string
+	Start    int
+	End      int
+	Change   int
+	Increase int
+}
+
+func (a *Accounts) Current() []CurrentEntry {
+	var date string
+	for _, a := range a.accounts {
+		for _, h := range a.History {
+			if date == "" || strings.Compare(date, h.Date) < 0 {
+				date = h.Date
+			}
+		}
+	}
+
+	var current []CurrentEntry
+	for _, a := range a.accounts {
+		lastIndex := len(a.History) - 1
+		if a.History[lastIndex].Date != date {
+			current = append(current, CurrentEntry{
+				Name:     a.Name,
+				Start:    a.History[lastIndex].Amount,
+				End:      a.History[lastIndex].Amount,
+				Change:   0,
+				Increase: 0,
+			})
+		} else if lastIndex == 0 {
+			current = append(current, CurrentEntry{
+				Name:     a.Name,
+				Start:    0,
+				End:      a.History[lastIndex].Amount,
+				Change:   a.History[lastIndex].Change,
+				Increase: a.History[lastIndex].Amount - a.History[lastIndex].Change,
+			})
+		} else {
+			current = append(current, CurrentEntry{
+				Name:     a.Name,
+				Start:    a.History[lastIndex-1].Amount,
+				End:      a.History[lastIndex].Amount,
+				Change:   a.History[lastIndex].Change,
+				Increase: a.History[lastIndex].Amount - a.History[lastIndex].Change - a.History[lastIndex-1].Amount,
+			})
+		}
+	}
+	sort.Slice(current, func(i, j int) bool {
+		firstEmpty := current[i].End == 0 && current[i].Change == 0
+		secondEmpty := current[j].End == 0 && current[j].Change == 0
+		bothEmpty := firstEmpty && secondEmpty
+		neitherEmpty := !firstEmpty && !secondEmpty
+		if bothEmpty || neitherEmpty {
+			return current[i].Name < current[j].Name
+		}
+		return secondEmpty
+	})
+	return current
 }
