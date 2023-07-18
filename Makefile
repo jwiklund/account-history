@@ -13,7 +13,7 @@ endif
 .PHONY: all
 all: dev
 
-mh: $(find . -name "*.html" -o -name "*.go")
+mh: $(shell find . -name "*.html" -o -name "*.go")
 > go build -o mh cmd/mh/main.go
 
 .PHONY: dev
