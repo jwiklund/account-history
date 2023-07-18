@@ -51,28 +51,25 @@ func main() {
 			}
 			date := accounts.CurrentDate()
 			for key, value := range r.Form {
-				if strings.HasSuffix(key, "-end") && len(value) == 1 {
-					intValue, err := strconv.Atoi(value[0])
+				if len(value) != 1 {
+					continue
+				}
+				intValue, err := strconv.Atoi(value[0])
+				if err != nil {
+					fmt.Printf("Could not parse %s: %v\n", value[0], err)
+					continue
+				}
+				if strings.HasSuffix(r.URL.Path, "/amount") {
+					err = accounts.UpdateAmountBySlug(key, date, intValue)
 					if err != nil {
-						fmt.Printf("Could not parse %s: %v\n", value[0], err)
-					} else {
-						err = accounts.UpdateAmountBySlug(key[0:len(key)-4], date, intValue)
-						if err != nil {
-							fmt.Printf("Could not update amount: %v", err)
-						}
+						fmt.Printf("Could not update amount: %v", err)
 					}
-				} else if strings.HasSuffix(key, "-change") && len(value) == 1 {
-					intValue, err := strconv.Atoi(value[0])
+				}
+				if strings.HasSuffix(r.URL.Path, "/change") {
+					err = accounts.UpdateChangeBySlug(key, date, intValue)
 					if err != nil {
-						fmt.Printf("Could not parse %s: %v\n", value[0], err)
-					} else {
-						err = accounts.UpdateChangeBySlug(key[0:len(key)-7], date, intValue)
-						if err != nil {
-							fmt.Printf("Could not update amount: %v", err)
-						}
+						fmt.Printf("Could not update amount: %v", err)
 					}
-				} else {
-					fmt.Println("Post", key)
 				}
 			}
 		}

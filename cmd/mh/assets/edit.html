@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   {{template "head.html"}}
-  <body>
+  <body hx-ext="morph">
     {{block "edit.body.html" .}}
     <div id="body" class="container" hx-boost="true">
       {{template "nav.html" "edit"}}
@@ -21,8 +21,8 @@
           <tr id="{{.Slug}}">
             <th scope="row">{{.Name}}</th>
             <td>{{.Start}}</td>
-            <td><input type=text value="{{.End}}" name="{{.Slug}}-end" hx-post="/edit/" hx-trigger="keyup delay:500ms changed" hx-target="#body"/></td>
-            <td><input type=text value="{{.Change}}" name="{{.Slug}}-change" hx-post="/edit/" hx-trigger="keyup delay:500ms changed" hx-target="#body"/></td>
+            <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
+            <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>
             <td>{{.Increase}}</td>
           </tr>
           {{end}}
@@ -31,8 +31,7 @@
       </table>
     </div>
     {{end}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    {{template "scripts.html"}}
   </body>
   
 </html>
