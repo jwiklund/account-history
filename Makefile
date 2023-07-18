@@ -13,8 +13,12 @@ endif
 .PHONY: all
 all: dev
 
+mh: $(find . -name "*.html" -o -name "*.go")
+> go build -o mh cmd/mh/main.go
+
+.PHONY: dev
 dev: $(shell bin/has reflex)
-> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/mh/main.go -app.assets=cmd/mh/assets -app.accounts=example.txt
+> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/mh/main.go -app.assets=view/assets -app.accounts=example.txt
 
 .PHONY: test
 test:

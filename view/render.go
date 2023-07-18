@@ -1,37 +1,46 @@
 package view
 
 import (
-	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"path/filepath"
 	"strings"
-	"text/template"
 
-	"github.com/jwiklund/money-history/history"
+	"github.com/jwiklund/money-history/view/assets"
 )
 
 type Renderer interface {
 	Render(name string, wr io.Writer, data any) error
 }
 
+type CheckRenderer interface {
+	Renderer
+	Check() error
+}
+
 func New(assets string) (Renderer, error) {
+	var result CheckRenderer
 	if assets == "" {
-		return nil, errors.New("Embedded assets not implemented yet")
+		var err error
+		result, err = newEmbed()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		result = DebugAssets{
+			assetDir: assets,
+		}
 	}
-	result := DebugAssets{
-		assetDir: assets,
-	}
-	err := result.check()
+	err := result.Check()
 	return result, err
 }
 
 type DebugAssets struct {
-	accounts history.Accounts
 	assetDir string
 }
 
-func (d DebugAssets) check() error {
+func (d DebugAssets) Check() error {
 	return d.Render("index.html", io.Discard, nil)
 }
 
@@ -46,4 +55,26 @@ func (d DebugAssets) Render(name string, wr io.Writer, data any) error {
 	}
 	err = templates.ExecuteTemplate(wr, name, data)
 	return err
+}
+
+type EmbedAssets struct {
+	templates *template.Template
+}
+
+func newEmbed() (CheckRenderer, error) {
+	templates, err := template.ParseFS(assets.EmbedFs, "*.html")
+	if err != nil {
+		return nil, fmt.Errorf("could not parse templates: %w", err)
+	}
+	return EmbedAssets{
+		templates: templates,
+	}, nil
+}
+
+func (e EmbedAssets) Check() error {
+	return e.Render("index.html", io.Discard, nil)
+}
+
+func (e EmbedAssets) Render(name string, wr io.Writer, data any) error {
+	return e.templates.ExecuteTemplate(wr, name, data)
 }

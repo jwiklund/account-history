@@ -29,7 +29,7 @@ type Accounts struct {
 
 func Load(filename string, initAccounts bool) (*Accounts, error) {
 	reader, err := os.Open(filename)
-	if err == os.ErrNotExist && initAccounts {
+	if os.IsNotExist(err) && initAccounts {
 		return &Accounts{nil}, nil
 	}
 	if err != nil {
