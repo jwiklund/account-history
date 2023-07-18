@@ -13,8 +13,8 @@ endif
 .PHONY: all
 all: dev
 
-mh: $(shell find . -name "*.html" -o -name "*.go")
-> go build -o mh cmd/mh/main.go
+money-history: $(shell find . -name "*.html" -o -name "*.go")
+> go build -o money-history cmd/mh/main.go
 
 .PHONY: dev
 dev: $(shell bin/has reflex)

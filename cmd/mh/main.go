@@ -25,11 +25,11 @@ func main() {
 		FlagPrefix: "app",
 	})
 	flagSet := loader.Flags()
-	initAccounts := flagSet.Bool("initAccounts", false, "Initialize history if it does not exist")
+	initHistory := flagSet.Bool("init-history", false, "Initialize history if it does not exist")
 	if err := loader.Load(); err != nil {
 		panic(err)
 	}
-	accounts, err := history.Load(cfg.Accounts, *initAccounts)
+	accounts, err := history.Load(cfg.Accounts, *initHistory)
 	if err != nil {
 		fmt.Printf("could not load history %v\n", err)
 		return

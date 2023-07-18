@@ -27,9 +27,9 @@ type Accounts struct {
 	accounts []Account
 }
 
-func Load(filename string, initAccounts bool) (*Accounts, error) {
+func Load(filename string, initHistory bool) (*Accounts, error) {
 	reader, err := os.Open(filename)
-	if os.IsNotExist(err) && initAccounts {
+	if os.IsNotExist(err) && initHistory {
 		return &Accounts{nil}, nil
 	}
 	if err != nil {
