@@ -40,10 +40,10 @@ func (d DebugAssets) Render(name string, wr io.Writer, data any) error {
 	if err != nil {
 		return fmt.Errorf("could not glob templates: %w", err)
 	}
-	namedTemplate, err := template.ParseFiles(matches...)
+	templates, err := template.ParseFiles(matches...)
 	if err != nil {
 		return fmt.Errorf("could not parse templates: %w", err)
 	}
-	err = namedTemplate.ExecuteTemplate(wr, name, data)
+	err = templates.ExecuteTemplate(wr, name, data)
 	return err
 }

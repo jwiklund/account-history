@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/cristalhq/aconfig"
@@ -42,9 +43,47 @@ func main() {
 			fmt.Fprintf(w, "Could not render index: %v", err)
 		}
 	})
-	http.HandleFunc("/edit", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/edit/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				fmt.Printf("Could not parse form: %v", err)
+			}
+			date := accounts.CurrentDate()
+			for key, value := range r.Form {
+				if strings.HasSuffix(key, "-end") && len(value) == 1 {
+					intValue, err := strconv.Atoi(value[0])
+					if err != nil {
+						fmt.Printf("Could not parse %s: %v\n", value[0], err)
+					} else {
+						err = accounts.UpdateAmountBySlug(key[0:len(key)-4], date, intValue)
+						if err != nil {
+							fmt.Printf("Could not update amount: %v", err)
+						}
+					}
+				} else if strings.HasSuffix(key, "-change") && len(value) == 1 {
+					intValue, err := strconv.Atoi(value[0])
+					if err != nil {
+						fmt.Printf("Could not parse %s: %v\n", value[0], err)
+					} else {
+						err = accounts.UpdateChangeBySlug(key[0:len(key)-7], date, intValue)
+						if err != nil {
+							fmt.Printf("Could not update amount: %v", err)
+						}
+					}
+				} else {
+					fmt.Println("Post", key)
+				}
+			}
+		}
 		if err := renderer.Render(templateName("edit", r), w, accounts.Current()); err != nil {
 			fmt.Fprintf(w, "Couild not render edit: %v", err)
+		}
+	})
+	http.HandleFunc("/save/", func(w http.ResponseWriter, r *http.Request) {
+		accounts.Save(cfg.Accounts)
+		if err := renderer.Render(templateName("index", r), w, accounts.Summary()); err != nil {
+			fmt.Fprintf(w, "Could not render index: %v", err)
 		}
 	})
 	fmt.Println("Listening on http://localhost:8080")

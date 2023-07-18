@@ -159,7 +159,7 @@ func TestCurrent(t *testing.T) {
 				},
 			},
 			{
-				Name: "name-3",
+				Name: "name 3",
 				History: []History{
 					{
 						Date:   "2022",
@@ -178,7 +178,16 @@ func TestCurrent(t *testing.T) {
 	summary := accounts.Current()
 	assert.Equal(t, []CurrentEntry{
 		{
+			Name:     "name 3",
+			Slug:     "name-3",
+			Start:    2,
+			End:      2,
+			Change:   0,
+			Increase: 0,
+		},
+		{
 			Name:     "name-0-2",
+			Slug:     "name-0-2",
 			Start:    1,
 			End:      0,
 			Change:   -1,
@@ -186,6 +195,7 @@ func TestCurrent(t *testing.T) {
 		},
 		{
 			Name:     "name-1",
+			Slug:     "name-1",
 			Start:    1,
 			End:      1,
 			Change:   0,
@@ -193,20 +203,15 @@ func TestCurrent(t *testing.T) {
 		},
 		{
 			Name:     "name-2",
+			Slug:     "name-2",
 			Start:    0,
 			End:      2,
 			Change:   0,
 			Increase: 2,
 		},
 		{
-			Name:     "name-3",
-			Start:    2,
-			End:      2,
-			Change:   0,
-			Increase: 0,
-		},
-		{
 			Name:     "name-0",
+			Slug:     "name-0",
 			Start:    0,
 			End:      0,
 			Change:   0,

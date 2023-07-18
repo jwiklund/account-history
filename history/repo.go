@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -57,6 +59,21 @@ func LoadFrom(reader io.Reader) (*Accounts, error) {
 	}
 }
 
+func (a *Accounts) Save(filename string) error {
+	writer, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	encoder := yaml.NewEncoder(writer)
+	for _, account := range a.accounts {
+		err := encoder.Encode(account)
+		if err != nil {
+			return fmt.Errorf("could not write entry to %s: %w", filename, err)
+		}
+	}
+	return encoder.Close()
+}
+
 type SummaryEntry struct {
 	Year     string
 	Start    int
@@ -99,6 +116,7 @@ func (a *Accounts) Summary() []SummaryEntry {
 
 type CurrentEntry struct {
 	Name     string
+	Slug     string
 	Start    int
 	End      int
 	Change   int
@@ -106,21 +124,14 @@ type CurrentEntry struct {
 }
 
 func (a *Accounts) Current() []CurrentEntry {
-	var date string
-	for _, a := range a.accounts {
-		for _, h := range a.History {
-			if date == "" || strings.Compare(date, h.Date) < 0 {
-				date = h.Date
-			}
-		}
-	}
-
+	date := a.CurrentDate()
 	var current []CurrentEntry
 	for _, a := range a.accounts {
 		lastIndex := len(a.History) - 1
 		if a.History[lastIndex].Date != date {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
+				Slug:     nameToSlug(a.Name),
 				Start:    a.History[lastIndex].Amount,
 				End:      a.History[lastIndex].Amount,
 				Change:   0,
@@ -129,6 +140,7 @@ func (a *Accounts) Current() []CurrentEntry {
 		} else if lastIndex == 0 {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
+				Slug:     nameToSlug(a.Name),
 				Start:    0,
 				End:      a.History[lastIndex].Amount,
 				Change:   a.History[lastIndex].Change,
@@ -137,6 +149,7 @@ func (a *Accounts) Current() []CurrentEntry {
 		} else {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
+				Slug:     nameToSlug(a.Name),
 				Start:    a.History[lastIndex-1].Amount,
 				End:      a.History[lastIndex].Amount,
 				Change:   a.History[lastIndex].Change,
@@ -155,4 +168,59 @@ func (a *Accounts) Current() []CurrentEntry {
 		return secondEmpty
 	})
 	return current
+}
+
+func (a *Accounts) CurrentDate() string {
+	var date string
+	for _, a := range a.accounts {
+		for _, h := range a.History {
+			if date == "" || strings.Compare(date, h.Date) < 0 {
+				date = h.Date
+			}
+		}
+	}
+	if date != "" {
+		return date
+	}
+	return time.Now().Format("2006")
+}
+
+func (a *Accounts) UpdateAmountBySlug(slug string, date string, newAmount int) error {
+	return a.updateBySlug(slug, date, func(h History) History {
+		h.Amount = newAmount
+		return h
+	})
+}
+
+func (a *Accounts) UpdateChangeBySlug(slug string, date string, newChange int) error {
+	return a.updateBySlug(slug, date, func(h History) History {
+		h.Change = newChange
+		return h
+	})
+}
+
+func (a *Accounts) updateBySlug(slug string, date string, update func(History) History) error {
+	for _, account := range a.accounts {
+		if nameToSlug(account.Name) == slug {
+			for index, history := range account.History {
+				if history.Date == date {
+					account.History[index] = update(history)
+					return nil
+				}
+			}
+			account.History = append(account.History, update(History{
+				Date:   date,
+				Amount: 0,
+				Change: 0,
+			}))
+			return nil
+		}
+	}
+	return fmt.Errorf("No such account: %s", slug)
+}
+
+var nameToSlugRegex = regexp.MustCompile("[^a-z0-9]+")
+
+func nameToSlug(name string) string {
+	return nameToSlugRegex.ReplaceAllString(strings.ToLower(name), "-")
 }
