@@ -1,17 +1,23 @@
 name: account-1
 history:
-- date: 2022
-  amount: 1000
-  change: 900
-- date: 2023
-  amount: 1000
-  change: 0
+    - date: "2022"
+      amount: 1000
+      change: 900
+    - date: "2023"
+      amount: 1000
+      change: 0
 ---
 name: account-2
 history:
-- date: 2022
-  amount: 0
-  change: 0
-- date: 2023
-  amount: 200
-  change: 100
+    - date: "2022"
+      amount: 0
+      change: 0
+    - date: "2023"
+      amount: 200
+      change: 100
+---
+name: account-3
+history:
+    - date: "2023"
+      amount: 1000
+      change: 500

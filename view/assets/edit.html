@@ -29,6 +29,10 @@
           {{end}}
         </tbody>
       </table>
+      <form class="d-flex" action="/edit/add" method="POST">
+        <input name="name" class="form-control" type="text" placeholder="Name" aria-label="Name">
+        <button class="btn btn-outline-success" type="submit">Add</button>
+      </form>
     </div>
     {{end}}
     {{template "scripts.html"}}

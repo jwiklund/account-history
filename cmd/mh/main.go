@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -43,6 +44,12 @@ func main() {
 			fmt.Fprintf(w, "Could not render index: %v", err)
 		}
 	})
+	http.HandleFunc("/save/", func(w http.ResponseWriter, r *http.Request) {
+		accounts.Save(cfg.Accounts)
+		if err := renderer.Render(templateName("index", r), w, accounts.Summary()); err != nil {
+			fmt.Fprintf(w, "Could not render index: %v", err)
+		}
+	})
 	http.HandleFunc("/edit/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			err := r.ParseForm()
@@ -50,37 +57,37 @@ func main() {
 				fmt.Printf("Could not parse form: %v", err)
 			}
 			date := accounts.CurrentDate()
-			for key, value := range r.Form {
-				if len(value) != 1 {
-					continue
-				}
-				intValue, err := strconv.Atoi(value[0])
+			if strings.HasSuffix(r.URL.Path, "/amount") {
+				key, value, err := slugAndIntValue(r)
 				if err != nil {
-					fmt.Printf("Could not parse %s: %v\n", value[0], err)
-					continue
-				}
-				if strings.HasSuffix(r.URL.Path, "/amount") {
-					err = accounts.UpdateAmountBySlug(key, date, intValue)
-					if err != nil {
-						fmt.Printf("Could not update amount: %v", err)
-					}
-				}
-				if strings.HasSuffix(r.URL.Path, "/change") {
-					err = accounts.UpdateChangeBySlug(key, date, intValue)
+					fmt.Printf("Could not parse amount: %v", err)
+				} else {
+					err = accounts.UpdateAmountBySlug(key, date, value)
 					if err != nil {
 						fmt.Printf("Could not update amount: %v", err)
 					}
 				}
 			}
+			if strings.HasSuffix(r.URL.Path, "/change") {
+				key, value, err := slugAndIntValue(r)
+				if err != nil {
+					fmt.Printf("Could not parse amount: %v", err)
+				} else {
+					err = accounts.UpdateChangeBySlug(key, date, value)
+					if err != nil {
+						fmt.Printf("Could not update amount: %v", err)
+					}
+				}
+			}
+			if strings.HasSuffix(r.URL.Path, "/add") {
+				name := r.Form.Get("name")
+				if name != "" {
+					accounts.AddAccount(name, date)
+				}
+			}
 		}
 		if err := renderer.Render(templateName("edit", r), w, accounts.Current()); err != nil {
 			fmt.Fprintf(w, "Couild not render edit: %v", err)
-		}
-	})
-	http.HandleFunc("/save/", func(w http.ResponseWriter, r *http.Request) {
-		accounts.Save(cfg.Accounts)
-		if err := renderer.Render(templateName("index", r), w, accounts.Summary()); err != nil {
-			fmt.Fprintf(w, "Could not render index: %v", err)
 		}
 	})
 	fmt.Println("Listening on http://localhost:8080")
@@ -94,4 +101,18 @@ func templateName(part string, r *http.Request) string {
 		suffix = "body.html"
 	}
 	return strings.Join([]string{part, suffix}, ".")
+}
+
+func slugAndIntValue(r *http.Request) (string, int, error) {
+	for key, value := range r.Form {
+		if len(value) != 1 {
+			continue
+		}
+		intValue, err := strconv.Atoi(value[0])
+		if err != nil {
+			return "", 0, err
+		}
+		return key, intValue, nil
+	}
+	return "", 0, errors.New("no form values")
 }

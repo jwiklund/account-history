@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/mh/main.go",
-            "args": ["-app.assets=cmd/mh/assets", "-app.accounts=example.txt"],
+            "args": ["-app.assets=view/assets", "-app.accounts=example.txt"],
             "cwd": "."
         }
     ]

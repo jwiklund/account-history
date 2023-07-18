@@ -185,6 +185,15 @@ func (a *Accounts) CurrentDate() string {
 	return time.Now().Format("2006")
 }
 
+func (a *Accounts) AddAccount(name string, date string) {
+	a.accounts = append(a.accounts, Account{
+		Name: name,
+		History: []History{
+			{Date: date},
+		},
+	})
+}
+
 func (a *Accounts) UpdateAmountBySlug(slug string, date string, newAmount int) error {
 	return a.updateBySlug(slug, date, func(h History) History {
 		h.Amount = newAmount
