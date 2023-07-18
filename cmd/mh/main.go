@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/cristalhq/aconfig"
-	"github.com/jwiklund/money-history/history"
-	"github.com/jwiklund/money-history/view"
+	"github.com/jwiklund/mh/history"
+	"github.com/jwiklund/mh/view"
 )
 
 type Config struct {

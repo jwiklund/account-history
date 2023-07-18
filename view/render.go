@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jwiklund/money-history/view/assets"
+	"github.com/jwiklund/mh/view/assets"
 )
 
 type Renderer interface {

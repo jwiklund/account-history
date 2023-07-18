@@ -1,4 +1,4 @@
-module github.com/jwiklund/money-history
+module github.com/jwiklund/mh
 
 go 1.21rc3
 
