@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"path/filepath"
-	"strings"
+	"io/fs"
+	"os"
 
 	"github.com/jwiklund/mh/view/assets"
 )
@@ -19,62 +19,48 @@ type CheckRenderer interface {
 	Check() error
 }
 
-func New(assets string) (Renderer, error) {
-	var result CheckRenderer
-	if assets == "" {
-		var err error
-		result, err = newEmbed()
+func New(assetsPath string) (Renderer, error) {
+	if assetsPath == "" {
+		templates, err := template.ParseFS(assets.EmbedFs, "*.html")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse templates: %w", err)
 		}
-	} else {
-		result = DebugAssets{
-			assetDir: assets,
-		}
+		renderer := eagerRenderer{templates}
+		return renderer, check(renderer)
 	}
-	err := result.Check()
-	return result, err
+	renderer := lazyRenderer{os.DirFS(assetsPath)}
+	return renderer, check(renderer)
 }
 
-type DebugAssets struct {
-	assetDir string
-}
-
-func (d DebugAssets) Check() error {
-	return d.Render("index.html", io.Discard, nil)
-}
-
-func (d DebugAssets) Render(name string, wr io.Writer, data any) error {
-	matches, err := filepath.Glob(strings.Join([]string{d.assetDir, "*.html"}, "/"))
+func templates(fs fs.FS) (*template.Template, error) {
+	templates, err := template.ParseFS(assets.EmbedFs, "*.html")
 	if err != nil {
-		return fmt.Errorf("could not glob templates: %w", err)
+		return nil, fmt.Errorf("could not parse templates: %w", err)
 	}
-	templates, err := template.ParseFiles(matches...)
+	return templates, err
+}
+
+func check(r Renderer) error {
+	return r.Render("index.html", io.Discard, nil)
+}
+
+type eagerRenderer struct {
+	templates *template.Template
+}
+
+func (e eagerRenderer) Render(name string, wr io.Writer, data any) error {
+	return e.templates.ExecuteTemplate(wr, name, data)
+}
+
+type lazyRenderer struct {
+	fs fs.FS
+}
+
+func (l lazyRenderer) Render(name string, wr io.Writer, data any) error {
+	templates, err := template.ParseFS(l.fs, "*.html")
 	if err != nil {
 		return fmt.Errorf("could not parse templates: %w", err)
 	}
 	err = templates.ExecuteTemplate(wr, name, data)
 	return err
-}
-
-type EmbedAssets struct {
-	templates *template.Template
-}
-
-func newEmbed() (CheckRenderer, error) {
-	templates, err := template.ParseFS(assets.EmbedFs, "*.html")
-	if err != nil {
-		return nil, fmt.Errorf("could not parse templates: %w", err)
-	}
-	return EmbedAssets{
-		templates: templates,
-	}, nil
-}
-
-func (e EmbedAssets) Check() error {
-	return e.Render("index.html", io.Discard, nil)
-}
-
-func (e EmbedAssets) Render(name string, wr io.Writer, data any) error {
-	return e.templates.ExecuteTemplate(wr, name, data)
 }
