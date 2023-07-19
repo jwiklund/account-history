@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "cmd/mh/main.go",
+            "program": "cmd/ah/main.go",
             "args": ["-app.assets=view/assets", "-app.accounts=example.txt"],
             "cwd": "."
         }

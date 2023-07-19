@@ -1,4 +1,4 @@
-module github.com/jwiklund/mh
+module github.com/jwiklund/ah
 
 go 1.21rc3
 

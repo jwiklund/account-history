@@ -7,7 +7,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/jwiklund/mh/view/assets"
+	"github.com/jwiklund/ah/view/assets"
 )
 
 type Renderer interface {

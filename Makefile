@@ -14,11 +14,11 @@ endif
 all: dev
 
 money-history: $(shell find . -name "*.html" -o -name "*.go")
-> go build -o money-history cmd/mh/main.go
+> go build -o account-history cmd/ah/main.go
 
 .PHONY: dev
 dev: $(shell bin/has reflex)
-> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/mh/main.go -app.assets=view/assets -app.accounts=example.txt
+> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/ah/main.go -app.assets=view/assets -app.accounts=example.txt
 
 .PHONY: test
 test:
