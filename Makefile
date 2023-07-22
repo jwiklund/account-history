@@ -13,7 +13,7 @@ endif
 .PHONY: all
 all: dev
 
-money-history: $(shell find . -name "*.html" -o -name "*.go")
+account-history: $(shell find . -name "*.html" -o -name "*.go")
 > go build -o account-history cmd/ah/main.go
 
 .PHONY: dev
