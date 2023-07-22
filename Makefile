@@ -29,4 +29,4 @@ test-w: $(shell bin/has reflex)
 > reflex -d none -s -R vendor. -r '\.go$$|\.yaml$$' -- go test ./...
 
 install-reflex:
-> go install github.com/cespare/reflex@latest && touch install-reflex
+> go install github.com/cespare/reflex@latest
