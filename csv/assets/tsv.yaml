@@ -1,0 +1,17 @@
+input:
+- "a\tb\tc"
+opts:
+  separator: "\t"
+expect:
+  rows:
+  - columns:
+    - value: a
+      type: name
+    - value: b
+    - value: c
+  columns:
+  - name
+  - ""
+  - ""
+  name: a
+error: Date is required

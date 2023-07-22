@@ -16,13 +16,33 @@ type Control struct {
 	Renderer     view.Renderer
 }
 
-func templateName(part string, r *http.Request) string {
-	hx, _ := r.Header["Hx-Request"]
-	suffix := "html"
-	if len(hx) == 1 && hx[0] == "true" {
-		suffix = "body.html"
+func templateName(base string, r *http.Request) string {
+	return templateNameWithPart(base, r, "body")
+}
+
+func templateNameWithPart(base string, r *http.Request, part string) string {
+	parts := []string{base}
+	if isHx(r) {
+		parts = append(parts, part)
 	}
-	return strings.Join([]string{part, suffix}, ".")
+	parts = append(parts, "html")
+	return strings.Join(parts, ".")
+}
+
+func isHx(r *http.Request) bool {
+	hx, _ := r.Header["Hx-Request"]
+	return len(hx) == 1 && hx[0] == "true"
+}
+
+func formInput(r *http.Request, key string) string {
+	return strings.TrimSpace(rawFormInput(r, key))
+}
+
+func rawFormInput(r *http.Request, key string) string {
+	if len(r.Form[key]) == 1 {
+		return r.Form[key][0]
+	}
+	return ""
 }
 
 func slugAndIntValue(r *http.Request) (string, int, error) {

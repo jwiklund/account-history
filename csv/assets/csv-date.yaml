@@ -1,0 +1,19 @@
+input:
+- "a,2001,3"
+opts:
+  separator: ","
+expect:
+  rows:
+  - columns:
+    - value: a
+      type: name
+    - value: 2001
+      type: date
+    - value: 3
+      type: amount
+  columns:
+  - name
+  - date
+  - amount
+  name: a
+  date: 2001

@@ -12,6 +12,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Accounts struct {
+	accounts []Account
+}
+
 type Account struct {
 	Name    string    `yaml:"name"`
 	History []History `yaml:"history"`
@@ -21,10 +25,6 @@ type History struct {
 	Date   string
 	Amount int
 	Change int
-}
-
-type Accounts struct {
-	accounts []Account
 }
 
 func Load(filename string, initHistory bool) (*Accounts, error) {
@@ -128,10 +128,19 @@ func (a *Accounts) Current() []CurrentEntry {
 	var current []CurrentEntry
 	for _, a := range a.accounts {
 		lastIndex := len(a.History) - 1
-		if a.History[lastIndex].Date != date {
+		if lastIndex == -1 {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
-				Slug:     nameToSlug(a.Name),
+				Slug:     NameToSlug(a.Name),
+				Start:    0,
+				End:      0,
+				Change:   0,
+				Increase: 0,
+			})
+		} else if a.History[lastIndex].Date != date {
+			current = append(current, CurrentEntry{
+				Name:     a.Name,
+				Slug:     NameToSlug(a.Name),
 				Start:    a.History[lastIndex].Amount,
 				End:      a.History[lastIndex].Amount,
 				Change:   0,
@@ -140,7 +149,7 @@ func (a *Accounts) Current() []CurrentEntry {
 		} else if lastIndex == 0 {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
-				Slug:     nameToSlug(a.Name),
+				Slug:     NameToSlug(a.Name),
 				Start:    0,
 				End:      a.History[lastIndex].Amount,
 				Change:   a.History[lastIndex].Change,
@@ -149,7 +158,7 @@ func (a *Accounts) Current() []CurrentEntry {
 		} else {
 			current = append(current, CurrentEntry{
 				Name:     a.Name,
-				Slug:     nameToSlug(a.Name),
+				Slug:     NameToSlug(a.Name),
 				Start:    a.History[lastIndex-1].Amount,
 				End:      a.History[lastIndex].Amount,
 				Change:   a.History[lastIndex].Change,
@@ -194,35 +203,49 @@ func (a *Accounts) AddAccount(name string, date string) {
 	})
 }
 
+func (a *Accounts) AddEmptyAccount(name string) {
+	a.accounts = append(a.accounts, Account{Name: name})
+}
+
 func (a *Accounts) UpdateAmountBySlug(slug string, date string, newAmount int) error {
-	return a.updateBySlug(slug, date, func(h History) History {
+	return a.UpdateHistoryBySlugDate(slug, date, func(h History) History {
 		h.Amount = newAmount
 		return h
 	})
 }
 
 func (a *Accounts) UpdateChangeBySlug(slug string, date string, newChange int) error {
-	return a.updateBySlug(slug, date, func(h History) History {
+	return a.UpdateHistoryBySlugDate(slug, date, func(h History) History {
 		h.Change = newChange
 		return h
 	})
 }
 
-func (a *Accounts) updateBySlug(slug string, date string, update func(History) History) error {
-	for _, account := range a.accounts {
-		if nameToSlug(account.Name) == slug {
-			for index, history := range account.History {
-				if history.Date == date {
-					account.History[index] = update(history)
-					return nil
-				}
+func (a *Accounts) UpdateHistoryBySlugDate(slug string, date string, update func(History) History) error {
+	return a.UpdateHistoryBySlug(slug, func(history []History) ([]History, error) {
+		for index, entry := range history {
+			if entry.Date == date {
+				history[index] = update(entry)
+				return history, nil
 			}
-			account.History = append(account.History, update(History{
-				Date:   date,
-				Amount: 0,
-				Change: 0,
-			}))
-			return nil
+		}
+		return append(history, update(History{
+			Date:   date,
+			Amount: 0,
+			Change: 0,
+		})), nil
+	})
+}
+
+func (a *Accounts) UpdateHistoryBySlug(slug string, update func([]History) ([]History, error)) error {
+	for i, account := range a.accounts {
+		if NameToSlug(account.Name) == slug {
+			newHistory, err := update(account.History)
+			if err == nil {
+				account.History = newHistory
+				a.accounts[i] = account
+			}
+			return err
 		}
 	}
 	return fmt.Errorf("No such account: %s", slug)
@@ -230,6 +253,6 @@ func (a *Accounts) updateBySlug(slug string, date string, update func(History) H
 
 var nameToSlugRegex = regexp.MustCompile("[^a-z0-9]+")
 
-func nameToSlug(name string) string {
+func NameToSlug(name string) string {
 	return nameToSlugRegex.ReplaceAllString(strings.ToLower(name), "-")
 }

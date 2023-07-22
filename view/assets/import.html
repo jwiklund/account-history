@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  {{template "head.html"}}
+  <body hx-ext="morph">
+    {{block "import.body.html" .}}
+    <div id="body" class="container" hx-boost="true">
+      {{template "nav.html" "import"}}
+      <form action="/import/prepare" method="POST" hx-target="#import">
+        <div class="mb-3">
+          <label for="csv" class="form-label">CSV</label>
+          <textarea name="csv" class="form-control" rows="5" placeholder="CSV" aria-label="CSV" hx-trigger="change" hx-post="/import/prepare">{{.Csv}}</textarea>
+        </div>
+        {{block "import.import.html" .}}
+        <div id="import" class="grid gap-3">
+          {{if .History}}
+          <div class="row">
+            <div class="col-6">
+              <label for="separator" class="form-label">Separator</label>
+              {{$separator := .Options.Separator}}
+              <select name="separator" class="form-control" hx-trigger="change" hx-post="/import/separator">
+                {{range $k, $v := .Separators}}
+                <option value="{{$k}}" {{if eq $k $separator}}selected{{end}}>{{$v}}</option>
+                {{end}}
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-6">
+              <label for="name" class="form-label">Name</label>
+              <input type="text" name="name" value="{{.Options.Name}}" class="form-control">
+            </div>
+            <div class="col-6">
+              <label for="date" class="form-label">Date</label>
+              <input type="text" name="date" value="{{.Options.Date}}" class="form-control">
+            </div>
+          </div>
+
+          <div class="row">
+            <legend>Preview</legend>
+            <table class="table">
+              <thead>
+                <tr>
+                  {{$columnTypes := .ColumnTypes}}
+                  {{range $i, $a := .Options.Columns}}
+                  <th scope="col">
+                    <select name="column-{{$i}}" class="form-control" hx-post="/import/column-{{$i}}">
+                      {{range $k, $v := $columnTypes}}
+                      <option value="{{$k}}" {{if eq $k $a}}selected{{end}}>{{$v}}</option>
+                      {{end}}
+                    </select>
+                  </th>
+                  {{end}}
+                </tr>
+              </thead>
+              <tbody>
+              {{range $h := .History}}
+                <tr>
+                {{range $c := $h.Columns}}
+                  <td {{if ne $c.Error nil}}class="text-danger"{{end}}>{{$c.Value}} {{if ne $c.Error nil}}{{$c.Error}}{{end}}</td>
+                {{end}}
+                </tr>
+              {{end}}
+              </tbody>
+            </table>
+          </div>
+          {{end}}
+          {{if ne .Error nil}}
+            <div class="alert alert-danger" role="alert">
+              {{.Error}}
+            </div>
+          {{end}}
+          {{if ne .Message ""}}
+            <div class="alert alert-success" role="alert">
+              {{.Message}}
+            </div>        
+          {{end}}
+        </div>
+        {{end}}
+        <button class="btn btn-outline-success">Import</button>
+      </form>
+    </div>
+    {{end}}
+    {{template "scripts.html"}}
+  </body>
+</html>

@@ -15,9 +15,3 @@ history:
     - date: "2023"
       amount: 200
       change: 100
----
-name: account-3
-history:
-    - date: "2023"
-      amount: 1000
-      change: 500

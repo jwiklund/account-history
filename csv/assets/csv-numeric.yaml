@@ -1,0 +1,19 @@
+input:
+- "a,2,3"
+opts:
+  separator: ","
+expect:
+  rows: 
+  - columns:
+    - value: a
+      type: name
+    - value: 2
+      type: amount
+    - value: 3
+      type: change
+  columns:
+  - name
+  - amount
+  - change
+  name: a
+error: Date is required
