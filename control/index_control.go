@@ -35,28 +35,28 @@ func summarize(a history.Accounts) IndexData {
 	var data IndexData
 	data.Years = a.Summary()
 
-	var totalSum float64
-	var totalIncrease float64
-	var totalChange float64
+	var totalSum int64
+	var totalIncrease int64
+	var totalChange int64
 
 	for _, y := range data.Years {
-		totalSum = float64(y.End)
-		totalIncrease = totalIncrease + float64(y.Increase)
-		totalChange = totalChange + float64(y.Change)
+		totalSum = int64(y.End)
+		totalIncrease = totalIncrease + int64(y.Increase)
+		totalChange = totalChange + int64(y.Change)
 	}
 
 	data.Total = []NameValue{
 		{
 			Name:  "Total assets",
-			Value: humanize.SIWithDigits(totalSum, 2, " kr"),
+			Value: humanize.Comma(totalSum),
 		},
 		{
 			Name:  "Total increase",
-			Value: humanize.SIWithDigits(totalIncrease, 2, " kr"),
+			Value: humanize.Comma(totalIncrease),
 		},
 		{
 			Name:  "Total change",
-			Value: humanize.SIWithDigits(totalChange, 2, " kr"),
+			Value: humanize.Comma(totalChange),
 		},
 	}
 	return data

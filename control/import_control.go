@@ -55,7 +55,7 @@ func (c *Control) Import(w http.ResponseWriter, r *http.Request) {
 			if date != "" {
 				historyData.Options.Date = date
 			}
-			if err == nil {
+			if err == nil && strings.HasSuffix(r.URL.Path, "/import/import") {
 				historyData.Error = history.Update(historyData.Options, c.Accounts)
 				if historyData.Error == nil {
 					historyData.Message = fmt.Sprintf("Updated %d rows", len(history.Rows))

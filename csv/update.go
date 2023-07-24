@@ -72,11 +72,13 @@ func (u historyUpdates) update(h []history.History) ([]history.History, error) {
 		if historyIndex < len(h) && h[historyIndex].Date < u[updateIndex].date {
 			result = append(result, h[historyIndex])
 			historyIndex++
+			continue
 		}
 		if historyIndex < len(h) && h[historyIndex].Date == u[updateIndex].date {
 			result = append(result, updateHistory(h[historyIndex], u[updateIndex]))
 			historyIndex++
 			updateIndex++
+			continue
 		}
 		if historyIndex >= len(h) || h[historyIndex].Date > u[updateIndex].date {
 			result = append(result, updateHistory(
