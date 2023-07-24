@@ -6,27 +6,49 @@
     <div class="container" hx-boost="true">
       {{template "nav.html" "index"}}
       <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Year</th>
-            <th scope="col">Start</th>
-            <th scope="col">End</th>
-            <th scope="col">Change</th>
-            <th scope="col">Increase</th>
-          </tr>
-        </thead>
         <tbody>
-          {{range .}}
+          {{range .Total}}
           <tr>
-            <th scope="row">{{.Year}}</th>
-            <td>{{.Start}}</td>
-            <td>{{.End}}</td>
-            <td>{{.Change}}</td>
-            <td>{{.Increase}}</td>
+            <th scope="row">{{.Name}}</th>
+            <td>{{.Value}}</td>
           </tr>
           {{end}}
         </tbody>
       </table>
+      <div>
+        <canvas id="summary"></canvas>
+      </div>
+      <script>
+        var summaryData = {{json .Years}}
+
+        function chart() {
+          summaryChart = document.getElementById("summary")
+          if (!summaryChart) {
+            return
+          }
+          if (document.currentChart) {
+            document.currentChart.destroy()
+          }
+          document.currentChart = new Chart(summaryChart, {
+            type: 'bar',
+            data: {
+              labels: summaryData.map(x => x.Year),
+              datasets: [{
+                label: 'Change',
+                data: summaryData.map(x => x.Change),
+              }, {
+                label: 'Increase',
+                data: summaryData.map(x => x.Increase),
+              }]
+            }
+         });
+        }
+        if (document.currentChartFn) {
+          document.body.removeEventListener("htmx:load", window.currentChartFn)
+        }
+        document.body.addEventListener("htmx:load", chart)
+        document.currentChartFn = chart
+      </script>
     </div>
     {{end}}
     {{template "scripts.html"}}

@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -21,7 +22,9 @@ type CheckRenderer interface {
 
 func New(assetsPath string) (Renderer, error) {
 	if assetsPath == "" {
-		templates, err := template.ParseFS(assets.EmbedFs, "*.html")
+		templates, err := template.New("").Funcs(map[string]any{
+			"json": toJson,
+		}).ParseFS(assets.EmbedFs, "*.html")
 		if err != nil {
 			return nil, fmt.Errorf("could not parse templates: %w", err)
 		}
@@ -30,14 +33,6 @@ func New(assetsPath string) (Renderer, error) {
 	}
 	renderer := lazyRenderer{os.DirFS(assetsPath)}
 	return renderer, check(renderer)
-}
-
-func templates(fs fs.FS) (*template.Template, error) {
-	templates, err := template.ParseFS(assets.EmbedFs, "*.html")
-	if err != nil {
-		return nil, fmt.Errorf("could not parse templates: %w", err)
-	}
-	return templates, err
 }
 
 func check(r Renderer) error {
@@ -57,10 +52,17 @@ type lazyRenderer struct {
 }
 
 func (l lazyRenderer) Render(name string, wr io.Writer, data any) error {
-	templates, err := template.ParseFS(l.fs, "*.html")
+	templates, err := template.New("").Funcs(map[string]any{
+		"json": toJson,
+	}).ParseFS(l.fs, "*.html")
 	if err != nil {
 		return fmt.Errorf("could not parse templates: %w", err)
 	}
 	err = templates.ExecuteTemplate(wr, name, data)
 	return err
+}
+
+func toJson(data any) (template.JS, error) {
+	result, err := json.MarshalIndent(data, "", "  ")
+	return template.JS(result), err
 }

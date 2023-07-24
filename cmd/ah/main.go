@@ -61,6 +61,7 @@ func serve(cfg Config, initHistory bool) {
 	http.HandleFunc("/save/", controller.Save)
 	http.HandleFunc("/edit/", controller.Edit)
 	http.HandleFunc("/import/", controller.Import)
+
 	fmt.Println("Listening on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
