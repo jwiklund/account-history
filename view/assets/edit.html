@@ -9,10 +9,10 @@
         <thead>
           <tr>
             <th scope="col">Name</th>
-            <th scope="col">Start</th>
+            <th scope="col" class="text-end">Start</th>
             <th scope="col">End</th>
             <th scope="col">Change</th>
-            <th scope="col">Increase</th>
+            <th scope="col" class="text-end">Increase</th>
           </tr>
         </thead>
         <tbody>
@@ -20,10 +20,10 @@
           {{block "edit.row.html" .}}
           <tr id="{{.Slug}}">
             <th scope="row"><a href="/edit/account/{{.Slug}}">{{.Name}}</a></th>
-            <td>{{.Start}}</td>
+            <td class="text-end">{{.Start}}</td>
             <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
             <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>
-            <td>{{.Increase}}</td>
+            <td class="text-end">{{.Increase}}</td>
           </tr>
           {{end}}
           {{end}}
