@@ -34,26 +34,41 @@ func sortHistory(history []History) {
 	})
 }
 
-func sortAccounts(accounts []Account) {
-	current := currentDateLocked(accounts)
+func sortAccounts(accounts []Account) []Account {
 	histories := make([]History, 0, len(accounts))
 	for _, a := range accounts {
 		if len(a.History) == 0 {
-			histories = append(histories, History{})
-		} else if a.History[len(a.History)-1].Date < current {
 			histories = append(histories, History{})
 		} else {
 			histories = append(histories, a.History[len(a.History)-1])
 		}
 	}
-	sort.Slice(accounts, func(i, j int) bool {
-		firstEmpty := histories[i].Amount == 0 && histories[i].Change == 0
-		secondEmpty := histories[j].Amount == 0 && histories[j].Change == 0
-		bothEmpty := firstEmpty && secondEmpty
-		neitherEmpty := !firstEmpty && !secondEmpty
-		if bothEmpty || neitherEmpty {
-			return accounts[i].Name < accounts[j].Name
+	indexes := make([]int, len(accounts))
+	for i := range accounts {
+		indexes[i] = i
+	}
+	sort.Slice(indexes, func(i, j int) bool {
+		firstOneoff := accounts[indexes[i]].Oneoff
+		secondOneoff := accounts[indexes[j]].Oneoff
+		bothOneoff := firstOneoff && secondOneoff
+		eitherOneoff := firstOneoff || secondOneoff
+		if !bothOneoff && eitherOneoff {
+			return secondOneoff
 		}
-		return secondEmpty
+
+		firstEmpty := histories[indexes[i]].Amount == 0 && histories[indexes[i]].Change == 0
+		secondEmpty := histories[indexes[j]].Amount == 0 && histories[indexes[j]].Change == 0
+		bothEmpty := firstEmpty && secondEmpty
+		eitherEmpty := firstEmpty || secondEmpty
+		if !bothEmpty && eitherEmpty {
+			return secondEmpty
+		}
+
+		return accounts[indexes[i]].Name < accounts[indexes[j]].Name
 	})
+	result := make([]Account, 0, len(accounts))
+	for _, i := range indexes {
+		result = append(result, accounts[i])
+	}
+	return result
 }

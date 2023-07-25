@@ -35,6 +35,7 @@ type SummaryEntry struct {
 	Start    int
 	End      int
 	Change   int
+	Oneoff   int
 	Increase int
 }
 
@@ -53,7 +54,12 @@ func (a *Accounts) Summary() []SummaryEntry {
 				summary[h.Date] = entry
 			}
 			entry.End = entry.End + h.Amount
-			entry.Change = entry.Change + h.Change
+			if a.Oneoff {
+				entry.Oneoff = entry.Oneoff - h.Change
+				entry.Change = entry.Change + h.Change
+			} else {
+				entry.Change = entry.Change + h.Change
+			}
 		}
 	}
 	var dates []string
@@ -66,7 +72,7 @@ func (a *Accounts) Summary() []SummaryEntry {
 	for _, date := range dates {
 		entry := summary[date]
 		entry.Start = current
-		entry.Increase = entry.End - entry.Change - entry.Start
+		entry.Increase = entry.End - entry.Change - entry.Start - entry.Oneoff
 		current = entry.End
 		result = append(result, *entry)
 	}

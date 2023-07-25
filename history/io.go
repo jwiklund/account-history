@@ -32,8 +32,7 @@ func LoadFrom(reader io.Reader) (*Accounts, error) {
 		var account Account
 		err := decoder.Decode(&account)
 		if err == io.EOF {
-			sortAccounts(result)
-			return &Accounts{result, &sync.Mutex{}}, nil
+			return &Accounts{sortAccounts(result), &sync.Mutex{}}, nil
 		}
 		if err != nil {
 			return nil, err

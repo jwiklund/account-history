@@ -15,13 +15,12 @@ func (a *Accounts) AddAccount(name string, date string) error {
 		}
 	}
 
-	a.accounts = append(a.accounts, Account{
+	a.accounts = sortAccounts(append(a.accounts, Account{
 		Name: name,
 		History: []History{
 			{Date: date},
 		},
-	})
-	sortAccounts(a.accounts)
+	}))
 	return nil
 }
 
@@ -36,8 +35,7 @@ func (a *Accounts) AddEmptyAccount(name string) error {
 		}
 	}
 
-	a.accounts = append(a.accounts, Account{Name: name})
-	sortAccounts(a.accounts)
+	a.accounts = sortAccounts(append(a.accounts, Account{Name: name}))
 	return nil
 }
 

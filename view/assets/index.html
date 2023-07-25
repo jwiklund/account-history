@@ -25,16 +25,46 @@
             document.currentChart.destroy()
           }
           document.currentChart = new Chart(summaryChart, {
-            type: 'bar',
             data: {
               labels: summaryData.map(x => x.Year),
               datasets: [{
+                type: 'bar',
                 label: 'Change',
                 data: summaryData.map(x => x.Change),
+                yAxisID: 'yYear',
               }, {
+                type: 'bar',
                 label: 'Increase',
                 data: summaryData.map(x => x.Increase),
+                yAxisID: 'yYear',
+              }, {
+                type: 'bar',
+                label: "One off",
+                data: summaryData.map(x => x.Oneoff),
+                yAxisID: 'yYear',
+              }, {
+                type: "line",
+                label: "Total",
+                data: summaryData.map(x => x.End),
+                yAxisID: 'yTotal',
               }]
+            },
+            options: {
+              scales: {
+                yYear: {
+                  type: "linear",
+                  display: true,
+                  postiion: "left",
+                  grid: {
+                    drawOnChartArea: false
+                  }
+                },
+                yTotal: {
+                  type: "linear",
+                  display: true,
+                  position: "right"
+                }
+              }
             }
          });
         }

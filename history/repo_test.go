@@ -113,70 +113,71 @@ func TestSummary(t *testing.T) {
 }
 
 func TestCurrent(t *testing.T) {
-	accounts := &Accounts{
-		lock: &sync.Mutex{},
-		accounts: []Account{
-			{
-				Name: "name-0",
-				History: []History{
-					{
-						Date:   "2022",
-						Amount: 0,
-						Change: 0,
-					},
-				},
-			},
-			{
-				Name: "name-0-2",
-				History: []History{
-					{
-						Date:   "2022",
-						Amount: 1,
-						Change: 1,
-					},
-					{
-						Date:   "2023",
-						Amount: 0,
-						Change: -1,
-					},
-				},
-			},
-			{
-				Name: "name-1",
-				History: []History{
-					{
-						Date:   "2022",
-						Amount: 1,
-						Change: 1,
-					},
-				},
-			},
-			{
-				Name: "name-2",
-				History: []History{
-					{
-						Date:   "2023",
-						Amount: 2,
-						Change: 0,
-					},
-				},
-			},
-			{
-				Name: "name 3",
-				History: []History{
-					{
-						Date:   "2022",
-						Amount: 2,
-						Change: 2,
-					},
-					{
-						Date:   "2023",
-						Amount: 2,
-						Change: 0,
-					},
+	unsortedAccounts := []Account{
+		{
+			Name: "name-0",
+			History: []History{
+				{
+					Date:   "2022",
+					Amount: 0,
+					Change: 0,
 				},
 			},
 		},
+		{
+			Name: "name-0-2",
+			History: []History{
+				{
+					Date:   "2022",
+					Amount: 1,
+					Change: 1,
+				},
+				{
+					Date:   "2023",
+					Amount: 0,
+					Change: -1,
+				},
+			},
+		},
+		{
+			Name: "name-1",
+			History: []History{
+				{
+					Date:   "2022",
+					Amount: 1,
+					Change: 1,
+				},
+			},
+		},
+		{
+			Name: "name-2",
+			History: []History{
+				{
+					Date:   "2023",
+					Amount: 2,
+					Change: 0,
+				},
+			},
+		},
+		{
+			Name: "name 3",
+			History: []History{
+				{
+					Date:   "2022",
+					Amount: 2,
+					Change: 2,
+				},
+				{
+					Date:   "2023",
+					Amount: 2,
+					Change: 0,
+				},
+			},
+		},
+	}
+	accounts := &Accounts{
+		lock:     &sync.Mutex{},
+		accounts: sortAccounts(unsortedAccounts),
 	}
 	summary := accounts.Current()
 	assert.Equal(t, []CurrentEntry{

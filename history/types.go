@@ -10,6 +10,7 @@ type Accounts struct {
 type Account struct {
 	Name    string    `yaml:"name"`
 	History []History `yaml:"history"`
+	Oneoff  bool      `yaml:"oneoff"`
 }
 
 type History struct {
