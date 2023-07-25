@@ -19,7 +19,7 @@
           {{range .}}
           {{block "edit.row.html" .}}
           <tr id="{{.Slug}}">
-            <th scope="row">{{.Name}}</th>
+            <th scope="row"><a href="/edit/account/{{.Slug}}">{{.Name}}</a></th>
             <td>{{.Start}}</td>
             <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
             <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>

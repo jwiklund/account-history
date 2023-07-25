@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/dustin/go-humanize"
 	"github.com/jwiklund/ah/view/assets"
 )
 
@@ -20,11 +21,14 @@ type CheckRenderer interface {
 	Check() error
 }
 
+var funcMap = map[string]any{
+	"json":  toJson,
+	"human": toHuman,
+}
+
 func New(assetsPath string) (Renderer, error) {
 	if assetsPath == "" {
-		templates, err := template.New("").Funcs(map[string]any{
-			"json": toJson,
-		}).ParseFS(assets.EmbedFs, "*.html")
+		templates, err := template.New("").Funcs(funcMap).ParseFS(assets.EmbedFs, "*.html")
 		if err != nil {
 			return nil, fmt.Errorf("could not parse templates: %w", err)
 		}
@@ -52,9 +56,7 @@ type lazyRenderer struct {
 }
 
 func (l lazyRenderer) Render(name string, wr io.Writer, data any) error {
-	templates, err := template.New("").Funcs(map[string]any{
-		"json": toJson,
-	}).ParseFS(l.fs, "*.html")
+	templates, err := template.New("").Funcs(funcMap).ParseFS(l.fs, "*.html")
 	if err != nil {
 		return fmt.Errorf("could not parse templates: %w", err)
 	}
@@ -65,4 +67,11 @@ func (l lazyRenderer) Render(name string, wr io.Writer, data any) error {
 func toJson(data any) (template.JS, error) {
 	result, err := json.MarshalIndent(data, "", "  ")
 	return template.JS(result), err
+}
+
+func toHuman(data any) string {
+	if i, ok := data.(int); ok {
+		return humanize.Comma(int64(i))
+	}
+	return fmt.Sprintf("%v", data)
 }

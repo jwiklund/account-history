@@ -10,6 +10,8 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+DEV_ACCOUNTS := -app.accounts=example.txt
+
 .PHONY: all
 all: dev
 
@@ -18,7 +20,7 @@ account-history: $(shell find . -name "*.html" -o -name "*.go")
 
 .PHONY: dev
 dev: $(shell bin/has reflex)
-> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/ah/main.go -app.assets=view/assets -app.accounts=example.txt
+> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/ah/main.go -app.assets=view/assets $(DEV_ACCOUNTS)
 
 .PHONY: test
 test:

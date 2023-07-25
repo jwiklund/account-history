@@ -74,6 +74,28 @@ func (a *Accounts) Save(filename string) error {
 	return encoder.Close()
 }
 
+func (a *Accounts) AccountHistory(slug string) (string, []SummaryEntry, error) {
+	for _, a := range a.accounts {
+		if NameToSlug(a.Name) != slug {
+			continue
+		}
+		var summary []SummaryEntry
+		current := 0
+		for _, h := range a.History {
+			summary = append(summary, SummaryEntry{
+				Year:     h.Date,
+				Start:    current,
+				End:      h.Amount,
+				Change:   h.Change,
+				Increase: h.Amount - current - h.Change,
+			})
+			current = h.Amount
+		}
+		return a.Name, summary, nil
+	}
+	return "", nil, fmt.Errorf("No such account: %s", slug)
+}
+
 type SummaryEntry struct {
 	Year     string
 	Start    int

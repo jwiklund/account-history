@@ -2,6 +2,7 @@ package control
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -36,6 +37,19 @@ func isHx(r *http.Request) bool {
 
 func formInput(r *http.Request, key string) string {
 	return strings.TrimSpace(rawFormInput(r, key))
+}
+
+func formIntInput(r *http.Request, key string) (int, error) {
+	input := formInput(r, key)
+	if input != "" {
+		return 0, fmt.Errorf("no value for %s", key)
+	}
+	input = strings.ReplaceAll(input, ",", "")
+	value, err := strconv.Atoi(input)
+	if err != nil {
+		return 0, fmt.Errorf("invalid value for %s: %v", key, err)
+	}
+	return value, nil
 }
 
 func rawFormInput(r *http.Request, key string) string {

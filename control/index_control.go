@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dustin/go-humanize"
 	"github.com/jwiklund/ah/history"
 )
 
@@ -23,41 +22,33 @@ func (c *Control) Save(w http.ResponseWriter, r *http.Request) {
 
 type IndexData struct {
 	Years []history.SummaryEntry
-	Total []NameValue
+	Total Total
 }
 
-type NameValue struct {
-	Name  string
-	Value string
+type Total struct {
+	Assets   int
+	Increase int
+	Change   int
 }
 
 func summarize(a history.Accounts) IndexData {
 	var data IndexData
 	data.Years = a.Summary()
 
-	var totalSum int64
-	var totalIncrease int64
-	var totalChange int64
+	var totalSum int
+	var totalIncrease int
+	var totalChange int
 
 	for _, y := range data.Years {
-		totalSum = int64(y.End)
-		totalIncrease = totalIncrease + int64(y.Increase)
-		totalChange = totalChange + int64(y.Change)
+		totalSum = y.End
+		totalIncrease = totalIncrease + y.Increase
+		totalChange = totalChange + y.Change
 	}
 
-	data.Total = []NameValue{
-		{
-			Name:  "Total assets",
-			Value: humanize.Comma(totalSum),
-		},
-		{
-			Name:  "Total increase",
-			Value: humanize.Comma(totalIncrease),
-		},
-		{
-			Name:  "Total change",
-			Value: humanize.Comma(totalChange),
-		},
+	data.Total = Total{
+		Assets:   totalSum,
+		Increase: totalIncrease,
+		Change:   totalChange,
 	}
 	return data
 }

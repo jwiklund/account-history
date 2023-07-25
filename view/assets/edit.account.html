@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  {{template "head.html"}}
+  <body hx-ext="morph">
+    {{block "edit.account.body.html" .}}
+    <div id="body" class="container" hx-boost="true">
+      {{template "nav.html" "edit"}}
+      <legend>{{.Name}}</legend>
+      <div class="row">
+        <div class="col"><b>Total Assets</b> {{human .Total.Assets}}</div>
+        <div class="col"><b>Total Change</b> {{human .Total.Change}}</div>
+        <div class="col"><b>Total Increase</b> {{human .Total.Increase}}</div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Year</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Change</th>
+            <th scope="col">Increase</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{$slug := .Slug}}
+          {{range .History}}
+          <tr id="{{$slug}}">
+            <th scope="row">{{.Year}}</a></th>
+            <td>{{human .Start}}</td>
+            <td><input type=text hx-post="/edit/account/{{$slug}}/{{.Year}}/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{$slug}}" value="{{human .End}}"/></td>
+            <td><input type=text hx-post="/edit/change/{{$slug}}/{{.Year}}/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{$slug}}" value="{{human .Change}}"/></td>
+            <td>{{human .Increase}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      <form class="d-flex" action="/edit/account/{{.Slug}}/add" method="POST">
+        <input name="year" class="form-control" type="text" placeholder="Year" aria-label="Year">
+        <button class="btn btn-outline-success" type="submit">Add</button>
+      </form>
+      {{if ne .Error nil}}
+        <div class="alert alert-danger" role="alert">
+          {{.Error}}
+        </div>
+      {{end}}
+      {{if ne .Message ""}}
+        <div class="alert alert-success" role="alert">
+          {{.Message}}
+        </div>        
+      {{end}}
+    </div>
+    {{end}}
+    {{template "scripts.html"}}
+  </body>
+</html>

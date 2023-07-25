@@ -7,12 +7,18 @@
       {{template "nav.html" "index"}}
       <table class="table">
         <tbody>
-          {{range .Total}}
           <tr>
-            <th scope="row">{{.Name}}</th>
-            <td>{{.Value}}</td>
+            <th scope="row">Total Assets</th>
+            <td>{{human .Total.Assets}}</td>
           </tr>
-          {{end}}
+          <tr>
+            <th scope="row">Total Change</th>
+            <td>{{human .Total.Change}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Total Increase</th>
+            <td>{{human .Total.Increase}}</td>
+          </tr>
         </tbody>
       </table>
       <div>
