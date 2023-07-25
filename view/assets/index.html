@@ -3,24 +3,13 @@
   {{template "head.html"}}
   <body hx-ext="morph">
     {{block "index.body.html" .}}
-    <div class="container" hx-boost="true">
+    <div id="body" class="container" hx-boost="true">
       {{template "nav.html" "index"}}
-      <table class="table">
-        <tbody>
-          <tr>
-            <th scope="row">Total Assets</th>
-            <td>{{human .Total.Assets}}</td>
-          </tr>
-          <tr>
-            <th scope="row">Total Change</th>
-            <td>{{human .Total.Change}}</td>
-          </tr>
-          <tr>
-            <th scope="row">Total Increase</th>
-            <td>{{human .Total.Increase}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="row">
+        <div class="col"><b>Total Assets</b> {{human .Total.Assets}}</div>
+        <div class="col"><b>Total Change</b> {{human .Total.Change}}</div>
+        <div class="col"><b>Total Increase</b> {{human .Total.Increase}}</div>
+      </div>
       <div>
         <canvas id="summary"></canvas>
       </div>

@@ -5,13 +5,13 @@
       <a class="nav-link {{if eq . "index"}}active{{end}}" aria-current="page" href="/">Home</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{if eq . "edit"}}active{{end}}" aria-current="page" href="/edit/">Edit</a>
+      <a class="nav-link {{if eq . "edit"}}active{{end}}" aria-current="page" href="/edit">Edit</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{if eq . "import"}}active{{end}}" aria-current="page" href="/import/">Import</a>
+      <a class="nav-link {{if eq . "import"}}active{{end}}" aria-current="page" href="/import">Import</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" aria-current="page" href="/save/">Save</a>
+      <a class="nav-link" aria-current="page" hx-post="/save" hx-target="#body" hx-swap="morph">Save</a>
     </li>
   </ul>
 </nav>

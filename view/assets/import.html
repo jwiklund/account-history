@@ -44,7 +44,7 @@
                   {{$columnTypes := .ColumnTypes}}
                   {{range $i, $a := .Options.Columns}}
                   <th scope="col">
-                    <select name="column-{{$i}}" class="form-control" hx-post="/import/column-{{$i}}">
+                    <select name="column-{{$i}}" class="form-control" hx-post="/import/column/{{$i}}">
                       {{range $k, $v := $columnTypes}}
                       <option value="{{$k}}" {{if eq $k $a}}selected{{end}}>{{$v}}</option>
                       {{end}}
@@ -77,7 +77,7 @@
           {{end}}
         </div>
         {{end}}
-        <button class="btn btn-outline-success" hx-post="/import/import">Import</button>
+        <button class="btn btn-outline-success" hx-post="/import">Import</button>
       </form>
     </div>
     {{end}}

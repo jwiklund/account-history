@@ -26,13 +26,13 @@ var opts = ImportOptions{
 }
 
 func TestUpdateEmpty(t *testing.T) {
-	empty := &history.Accounts{}
+	empty := history.New()
 	err := amount1Rows.Update(opts, empty)
 	assert.Error(t, err, "No such account: name")
 }
 
 func TestUpdateEmptyWithAccount(t *testing.T) {
-	empty := &history.Accounts{}
+	empty := history.New()
 	empty.AddEmptyAccount("name")
 	err := amount1Rows.Update(opts, empty)
 	assert.NoError(t, err)

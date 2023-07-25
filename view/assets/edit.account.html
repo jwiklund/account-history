@@ -24,11 +24,11 @@
         <tbody>
           {{$slug := .Slug}}
           {{range .History}}
-          <tr id="{{$slug}}">
+          <tr id="{{.Year}}">
             <th scope="row">{{.Year}}</a></th>
             <td>{{human .Start}}</td>
-            <td><input type=text hx-post="/edit/account/{{$slug}}/{{.Year}}/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{$slug}}" value="{{human .End}}"/></td>
-            <td><input type=text hx-post="/edit/change/{{$slug}}/{{.Year}}/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{$slug}}" value="{{human .Change}}"/></td>
+            <td><input type=text hx-post="/edit/account/{{$slug}}/amount/{{.Year}}" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Year}}-amount" value="{{human .End}}"/></td>
+            <td><input type=text hx-post="/edit/account/{{$slug}}/change/{{.Year}}" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Year}}-change" value="{{human .Change}}"/></td>
             <td>{{human .Increase}}</td>
           </tr>
           {{end}}

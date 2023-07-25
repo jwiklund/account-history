@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/jwiklund/ah/csv"
 )
 
@@ -19,7 +20,23 @@ type HistoryData struct {
 	Message     string
 }
 
-func (c *Control) Import(w http.ResponseWriter, r *http.Request) {
+func (c *Control) RenderImport(w http.ResponseWriter, r *http.Request, historyData HistoryData) {
+	if err := c.Renderer.Render(templateName("import", r), w, historyData); err != nil {
+		fmt.Fprintf(w, "Could not render import: %v", err)
+	}
+}
+
+func (c *Control) RenderPartialImport(w http.ResponseWriter, r *http.Request, historyData HistoryData) {
+	if isHx(r) {
+		if err := c.Renderer.Render(templateNameWithPart("import", r, "import"), w, historyData); err != nil {
+			fmt.Fprintf(w, "Could not render import: %v", err)
+		}
+		return
+	}
+	c.RenderImport(w, r, historyData)
+}
+
+func (c *Control) Import(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	historyData := HistoryData{
 		Separators:  csv.ColumnSeparators,
 		ColumnTypes: csv.ColumnTypes,
@@ -27,59 +44,101 @@ func (c *Control) Import(w http.ResponseWriter, r *http.Request) {
 			Separator: csv.SpaceLike,
 		},
 	}
-	if r.Method == "POST" {
-		err := r.ParseForm()
-		if err != nil {
-			fmt.Printf("Could not parse form: %v", err)
-		}
-		separator := csv.ColumnSeparator(rawFormInput(r, "separator"))
-		if _, ok := csv.ColumnSeparators[separator]; ok {
-			historyData.Options.Separator = separator
-		}
-		historyData.Csv = formInput(r, "csv")
-		historyData.Options.Name = formInput(r, "name")
-		historyData.Options.Date = formInput(r, "date")
-		if !strings.HasSuffix(r.URL.Path, "/separator") {
-			historyData.Options.Columns = importPostColumns(r)
-		}
-		csvData := formInput(r, "csv")
-		if csvData != "" {
-			lines := strings.Split(csvData, "\n")
-			history, columns, name, date, err := csv.Import(lines, historyData.Options)
-			historyData.History = history.Rows
-			historyData.Options.Columns = columns
-			historyData.Error = err
-			if name != "" {
-				historyData.Options.Name = name
-			}
-			if date != "" {
-				historyData.Options.Date = date
-			}
-			if err == nil && strings.HasSuffix(r.URL.Path, "/import/import") {
-				historyData.Error = history.Update(historyData.Options, c.Accounts)
-				if historyData.Error == nil {
-					historyData.Message = fmt.Sprintf("Updated %d rows", len(history.Rows))
-				}
-			}
-		}
-		if isHx(r) {
-			if err := c.Renderer.Render(templateNameWithPart("import", r, "import"), w, historyData); err != nil {
-				fmt.Fprintf(w, "Could not render import: %v", err)
-			}
-			return
-		}
-	}
-	if err := c.Renderer.Render(templateName("import", r), w, historyData); err != nil {
-		fmt.Fprintf(w, "Could not render import: %v", err)
-	}
+	c.RenderImport(w, r, historyData)
 }
 
-func importPostColumns(r *http.Request) []csv.ImportColumnType {
+func (c *Control) PrepareImport(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	historyData := prepareImportData(r, "")
+	if historyData.Error != nil {
+		c.RenderPartialImport(w, r, historyData)
+	}
+	historyData = prepareImportCsv(r, historyData)
+	c.RenderPartialImport(w, r, historyData)
+}
+
+func (c *Control) PrepareImportSeparator(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	historyData := prepareImportData(r, "")
+	if historyData.Error != nil {
+		c.RenderPartialImport(w, r, historyData)
+	}
+	historyData.Options.Columns = nil
+	historyData = prepareImportCsv(r, historyData)
+	c.RenderPartialImport(w, r, historyData)
+}
+
+func (c *Control) PrepareImportColumn(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	historyData := prepareImportData(r, p.ByName("columnId"))
+	if historyData.Error != nil {
+		c.RenderPartialImport(w, r, historyData)
+	}
+	historyData = prepareImportCsv(r, historyData)
+	c.RenderPartialImport(w, r, historyData)
+}
+
+func (c *Control) ImportData(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	historyData := prepareImportData(r, "")
+	if historyData.Error != nil {
+		c.RenderPartialImport(w, r, historyData)
+	}
+	historyData = prepareImportCsv(r, historyData)
+	if historyData.Error == nil && historyData.History != nil {
+		historyData.Error = csv.ImportRows{Rows: historyData.History}.Update(historyData.Options, c.Accounts)
+		if historyData.Error == nil {
+			historyData.Message = fmt.Sprintf("Updated %d rows", len(historyData.History))
+		}
+	}
+	c.RenderPartialImport(w, r, historyData)
+}
+
+func prepareImportData(r *http.Request, columnId string) HistoryData {
+	historyData := HistoryData{
+		Separators:  csv.ColumnSeparators,
+		ColumnTypes: csv.ColumnTypes,
+		Options: csv.ImportOptions{
+			Separator: csv.SpaceLike,
+		},
+	}
+	historyData.Error = r.ParseForm()
+	if historyData.Error != nil {
+		return historyData
+	}
+	separator := csv.ColumnSeparator(rawFormInput(r, "separator"))
+	if _, ok := csv.ColumnSeparators[separator]; ok {
+		historyData.Options.Separator = separator
+	}
+	historyData.Csv = formInput(r, "csv")
+	historyData.Options.Name = formInput(r, "name")
+	historyData.Options.Date = formInput(r, "date")
+	historyData.Options.Columns = importPostColumns(r, columnId)
+	return historyData
+}
+
+func prepareImportCsv(r *http.Request, historyData HistoryData) HistoryData {
+	csvData := formInput(r, "csv")
+	if csvData == "" {
+		return historyData
+	}
+	lines := strings.Split(csvData, "\n")
+	history, columns, name, date, err := csv.Import(lines, historyData.Options)
+	historyData.History = history.Rows
+	historyData.Options.Columns = columns
+	historyData.Error = err
+	if name != "" {
+		historyData.Options.Name = name
+	}
+	if date != "" {
+		historyData.Options.Date = date
+	}
+	return historyData
+}
+
+func importPostColumns(r *http.Request, changed string) []csv.ImportColumnType {
 	var result []csv.ImportColumnType
 	duplicates := make(map[csv.ImportColumnType]int)
 	i := 0
 	for {
-		currentName := strings.Join([]string{"column", strconv.Itoa(i)}, "-")
+		currentString := strconv.Itoa(i)
+		currentName := strings.Join([]string{"column", currentString}, "-")
 		current := formInput(r, currentName)
 		if current == "" {
 			return result
@@ -87,7 +146,7 @@ func importPostColumns(r *http.Request) []csv.ImportColumnType {
 		columnType := csv.ImportColumnType(current)
 		if _, ok := csv.ColumnTypes[columnType]; ok {
 			if j, ok := duplicates[columnType]; ok {
-				if strings.HasSuffix(r.URL.Path, currentName) {
+				if currentString == changed {
 					result[j] = csv.None
 				} else {
 					columnType = csv.None

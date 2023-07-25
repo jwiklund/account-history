@@ -2,6 +2,7 @@ package history
 
 import (
 	"bytes"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,7 @@ history:
 func TestLoadFrom(t *testing.T) {
 	accounts, err := LoadFrom(bytes.NewBuffer([]byte(loadFromExample)))
 	assert.NoError(t, err)
-	assert.Equal(t, &Accounts{[]Account{
+	assert.Equal(t, []Account{
 		{
 			Name: "name-1",
 			History: []History{
@@ -53,12 +54,13 @@ func TestLoadFrom(t *testing.T) {
 				},
 			},
 		},
-	}}, accounts)
+	}, accounts.accounts)
 }
 
 func TestSummary(t *testing.T) {
 	accounts := &Accounts{
-		[]Account{
+		lock: &sync.Mutex{},
+		accounts: []Account{
 			{
 				Name: "name-1",
 				History: []History{
@@ -112,7 +114,8 @@ func TestSummary(t *testing.T) {
 
 func TestCurrent(t *testing.T) {
 	accounts := &Accounts{
-		[]Account{
+		lock: &sync.Mutex{},
+		accounts: []Account{
 			{
 				Name: "name-0",
 				History: []History{

@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -14,6 +15,7 @@ import (
 
 type Accounts struct {
 	accounts []Account
+	lock     *sync.Mutex
 }
 
 type Account struct {
@@ -27,10 +29,16 @@ type History struct {
 	Change int
 }
 
+func New() *Accounts {
+	return &Accounts{
+		lock: &sync.Mutex{},
+	}
+}
+
 func Load(filename string, initHistory bool) (*Accounts, error) {
 	reader, err := os.Open(filename)
 	if os.IsNotExist(err) && initHistory {
-		return &Accounts{nil}, nil
+		return &Accounts{nil, &sync.Mutex{}}, nil
 	}
 	if err != nil {
 		return nil, err
@@ -50,7 +58,7 @@ func LoadFrom(reader io.Reader) (*Accounts, error) {
 		var account Account
 		err := decoder.Decode(&account)
 		if err == io.EOF {
-			return &Accounts{result}, nil
+			return &Accounts{result, &sync.Mutex{}}, nil
 		}
 		if err != nil {
 			return nil, err
@@ -65,6 +73,10 @@ func (a *Accounts) Save(filename string) error {
 		return err
 	}
 	encoder := yaml.NewEncoder(writer)
+
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	for _, account := range a.accounts {
 		err := encoder.Encode(account)
 		if err != nil {
@@ -75,6 +87,9 @@ func (a *Accounts) Save(filename string) error {
 }
 
 func (a *Accounts) AccountHistory(slug string) (string, []SummaryEntry, error) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	for _, a := range a.accounts {
 		if NameToSlug(a.Name) != slug {
 			continue
@@ -105,6 +120,9 @@ type SummaryEntry struct {
 }
 
 func (a *Accounts) Summary() []SummaryEntry {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	summary := make(map[string]*SummaryEntry)
 	for _, a := range a.accounts {
 		for _, h := range a.History {
@@ -146,7 +164,10 @@ type CurrentEntry struct {
 }
 
 func (a *Accounts) Current() []CurrentEntry {
-	date := a.CurrentDate()
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	date := a.currentDateLocked()
 	var current []CurrentEntry
 	for _, a := range a.accounts {
 		lastIndex := len(a.History) - 1
@@ -202,6 +223,13 @@ func (a *Accounts) Current() []CurrentEntry {
 }
 
 func (a *Accounts) CurrentDate() string {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	return a.currentDateLocked()
+}
+
+func (a *Accounts) currentDateLocked() string {
 	var date string
 	for _, a := range a.accounts {
 		for _, h := range a.History {
@@ -216,17 +244,38 @@ func (a *Accounts) CurrentDate() string {
 	return time.Now().Format("2006")
 }
 
-func (a *Accounts) AddAccount(name string, date string) {
+func (a *Accounts) AddAccount(name string, date string) error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	slug := NameToSlug(name)
+	for _, a := range a.accounts {
+		if NameToSlug(a.Name) == slug {
+			return fmt.Errorf("Account %s collides with %s", name, a.Name)
+		}
+	}
 	a.accounts = append(a.accounts, Account{
 		Name: name,
 		History: []History{
 			{Date: date},
 		},
 	})
+	return nil
 }
 
-func (a *Accounts) AddEmptyAccount(name string) {
+func (a *Accounts) AddEmptyAccount(name string) error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	slug := NameToSlug(name)
+	for _, a := range a.accounts {
+		if NameToSlug(a.Name) == slug {
+			return fmt.Errorf("Account %s collides with %s", name, a.Name)
+		}
+	}
+
 	a.accounts = append(a.accounts, Account{Name: name})
+	return nil
 }
 
 func (a *Accounts) UpdateAmountBySlug(slug string, date string, newAmount int) error {
@@ -260,6 +309,9 @@ func (a *Accounts) UpdateHistoryBySlugDate(slug string, date string, update func
 }
 
 func (a *Accounts) UpdateHistoryBySlug(slug string, update func([]History) ([]History, error)) error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
 	for i, account := range a.accounts {
 		if NameToSlug(account.Name) == slug {
 			newHistory, err := update(account.History)

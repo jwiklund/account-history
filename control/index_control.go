@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/jwiklund/ah/history"
 )
 
-func (c *Control) Index(w http.ResponseWriter, r *http.Request) {
+func (c *Control) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts)); err != nil {
 		fmt.Fprintf(w, "Could not render index: %v", err)
 	}
 }
 
-func (c *Control) Save(w http.ResponseWriter, r *http.Request) {
+func (c *Control) Save(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	c.Accounts.Save(c.AccountsPath)
 	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts)); err != nil {
 		fmt.Fprintf(w, "Could not render index: %v", err)

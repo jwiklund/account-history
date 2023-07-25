@@ -41,7 +41,7 @@ func formInput(r *http.Request, key string) string {
 
 func formIntInput(r *http.Request, key string) (int, error) {
 	input := formInput(r, key)
-	if input != "" {
+	if input == "" {
 		return 0, fmt.Errorf("no value for %s", key)
 	}
 	input = strings.ReplaceAll(input, ",", "")

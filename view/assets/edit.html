@@ -16,7 +16,7 @@
           </tr>
         </thead>
         <tbody>
-          {{range .}}
+          {{range .Current}}
           {{block "edit.row.html" .}}
           <tr id="{{.Slug}}">
             <th scope="row"><a href="/edit/account/{{.Slug}}">{{.Name}}</a></th>
@@ -33,6 +33,16 @@
         <input name="name" class="form-control" type="text" placeholder="Name" aria-label="Name">
         <button class="btn btn-outline-success" type="submit">Add</button>
       </form>
+      {{if ne .Error nil}}
+        <div class="alert alert-danger" role="alert">
+          {{.Error}}
+        </div>
+      {{end}}
+      {{if ne .Message ""}}
+        <div class="alert alert-success" role="alert">
+          {{.Message}}
+        </div>        
+      {{end}}
     </div>
     {{end}}
     {{template "scripts.html"}}

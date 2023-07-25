@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/cristalhq/aconfig"
 	"github.com/cristalhq/aconfig/aconfigyaml"
+	"github.com/julienschmidt/httprouter"
 	"github.com/jwiklund/ah/control"
 	"github.com/jwiklund/ah/history"
 	"github.com/jwiklund/ah/view"
@@ -57,12 +59,26 @@ func serve(cfg Config, initHistory bool) {
 		Accounts:     accounts,
 		Renderer:     renderer,
 	}
-	http.HandleFunc("/", controller.Index)
-	http.HandleFunc("/save/", controller.Save)
-	http.HandleFunc("/edit/", controller.Edit)
-	http.HandleFunc("/edit/account/", controller.EditAccount)
-	http.HandleFunc("/import/", controller.Import)
+	router := httprouter.New()
+	router.GET("/", controller.Index)
+	router.POST("/save", controller.Save)
+
+	router.GET("/edit", controller.Edit)
+	router.POST("/edit/add", controller.EditAdd)
+	router.POST("/edit/amount", controller.EditAmount)
+	router.POST("/edit/change", controller.EditChange)
+
+	router.GET("/edit/account/:accountSlug", controller.EditAccount)
+	router.POST("/edit/account/:accountSlug/add", controller.EditAccountAdd)
+	router.POST("/edit/account/:accountSlug/amount/:year", controller.EditAccountAmount)
+	router.POST("/edit/account/:accountSlug/change/:year", controller.EditAccountChange)
+
+	router.GET("/import", controller.Import)
+	router.POST("/import/prepare", controller.PrepareImport)
+	router.POST("/import/separator", controller.PrepareImportSeparator)
+	router.POST("/import/column/:columnId", controller.PrepareImportColumn)
+	router.POST("/import", controller.ImportData)
 
 	fmt.Println("Listening on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
