@@ -16,7 +16,7 @@ DEV_ACCOUNTS := -app.accounts=example.txt
 all: dev
 
 account-history: $(shell find . -name "*.html" -o -name "*.go")
-> go build -o account-history cmd/ah/main.go
+> go install ./cmd/account-history
 
 .PHONY: dev
 dev: $(shell bin/has reflex)
