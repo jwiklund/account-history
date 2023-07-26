@@ -45,6 +45,7 @@ func formIntInput(r *http.Request, key string) (int, error) {
 		return 0, fmt.Errorf("no value for %s", key)
 	}
 	input = strings.ReplaceAll(input, ",", "")
+	input = strings.ReplaceAll(input, " ", "")
 	value, err := strconv.Atoi(input)
 	if err != nil {
 		return 0, fmt.Errorf("invalid value for %s: %v", key, err)
@@ -64,7 +65,10 @@ func slugAndIntValue(r *http.Request) (string, int, error) {
 		if len(value) != 1 {
 			continue
 		}
-		intValue, err := strconv.Atoi(value[0])
+		input := value[0]
+		input = strings.ReplaceAll(input, ",", "")
+		input = strings.ReplaceAll(input, " ", "")
+		intValue, err := strconv.Atoi(input)
 		if err != nil {
 			return "", 0, err
 		}
