@@ -20,7 +20,7 @@ account-history: $(shell find . -name "*.html" -o -name "*.go")
 
 .PHONY: dev
 dev: $(shell bin/has reflex)
-> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/ah/main.go -app.assets=view/assets $(DEV_ACCOUNTS)
+> reflex -d none -s -R vendor. -r \.go$$ -- go run cmd/account-history/main.go -app.assets=view/assets $(DEV_ACCOUNTS)
 
 .PHONY: test
 test:

@@ -1,8 +1,10 @@
 package csv
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,11 +48,23 @@ var ColumnTypes = map[ImportColumnType]string{
 	Change: "Change",
 }
 
-type ImportOptions struct {
-	Separator ColumnSeparator
-	Columns   []ImportColumnType
+type ImportPlugin struct {
 	Name      string
-	Date      string
+	Command   []string
+	Separator ColumnSeparator
+	NameValue string
+	DateValue string
+	Columns   []ImportColumnType
+}
+
+type ImportOptions struct {
+	CurrentDate string
+	Plugin      string
+	Separator   ColumnSeparator
+	Columns     []ImportColumnType
+	Name        string
+	Date        string
+	Plugins     map[string]ImportPlugin
 }
 
 type ImportColumn struct {
@@ -73,6 +87,13 @@ type ImportRows struct {
 }
 
 func Import(csv []string, opts ImportOptions) (ImportRows, []ImportColumnType, string, string, error) {
+	if opts.Plugin != "" {
+		var err error
+		csv, opts, err = executePlugin(csv, opts)
+		if err != nil {
+			return ImportRows{}, nil, "", "", fmt.Errorf("invalid plugin: %w", err)
+		}
+	}
 	separator, err := regexp.Compile(string(opts.Separator))
 	if err != nil {
 		return ImportRows{}, nil, "", "", fmt.Errorf("invalid separator: %w", err)
@@ -89,6 +110,51 @@ func Import(csv []string, opts ImportOptions) (ImportRows, []ImportColumnType, s
 	}
 	rows, columnTypes, name, date := typeRows(opts, lines, columnFeatures)
 	return ImportRows{rows}, columnTypes, name, date, validateRows(rows, opts.Name, opts.Date)
+}
+
+func executePlugin(csv []string, opts ImportOptions) ([]string, ImportOptions, error) {
+	plugin, ok := opts.Plugins[opts.Plugin]
+	if !ok {
+		return csv, opts, fmt.Errorf("No such plugin: %s", opts.Plugin)
+	}
+	pluginPath, err := exec.LookPath(plugin.Command[0])
+	if err != nil {
+		return csv, opts, fmt.Errorf("Could not find plugin %s: %w", plugin.Name, err)
+	}
+	cmd := exec.Command(pluginPath, plugin.Command[1:]...)
+	cmd.Stdin = bytes.NewBufferString(strings.Join(csv, "\n"))
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		if stdout.Available() > 0 {
+			fmt.Printf("Plugin %s output: %s\n", plugin.Name, string(stdout.Bytes()))
+		}
+		if stderr.Available() > 0 {
+			fmt.Printf("Plugin %s error: %s\n", plugin.Name, string(stderr.Bytes()))
+		}
+		return csv, opts, fmt.Errorf("Could not run plugin %s: %w", plugin.Name, err)
+	}
+	csv = strings.Split(string(stdout.Bytes()), "\n")
+	if opts.Separator == SpaceLike && opts.Separator != "" {
+		opts.Separator = plugin.Separator
+	}
+	if opts.Columns == nil {
+		opts.Columns = plugin.Columns
+	}
+	if opts.Name == "" {
+		opts.Name = plugin.NameValue
+	}
+	if opts.Date == "" {
+		if plugin.DateValue == "current" {
+			opts.Date = opts.CurrentDate
+		} else {
+			opts.Date = plugin.DateValue
+		}
+	}
+	return csv, opts, nil
 }
 
 func importLine(line string, separator *regexp.Regexp, columnFeatures []importColumnFeature) ([]ImportColumn, []importColumnFeature) {

@@ -42,13 +42,14 @@ func (c *Control) Import(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		ColumnTypes: csv.ColumnTypes,
 		Options: csv.ImportOptions{
 			Separator: csv.SpaceLike,
+			Plugins:   c.ImportPlugins,
 		},
 	}
 	c.RenderImport(w, r, historyData)
 }
 
 func (c *Control) PrepareImport(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	historyData := prepareImportData(r, "")
+	historyData := c.prepareImportData(r, "")
 	if historyData.Error != nil {
 		c.RenderPartialImport(w, r, historyData)
 	}
@@ -57,7 +58,7 @@ func (c *Control) PrepareImport(w http.ResponseWriter, r *http.Request, _ httpro
 }
 
 func (c *Control) PrepareImportSeparator(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	historyData := prepareImportData(r, "")
+	historyData := c.prepareImportData(r, "")
 	if historyData.Error != nil {
 		c.RenderPartialImport(w, r, historyData)
 	}
@@ -66,8 +67,22 @@ func (c *Control) PrepareImportSeparator(w http.ResponseWriter, r *http.Request,
 	c.RenderPartialImport(w, r, historyData)
 }
 
+func (c *Control) PrepareImportPlugin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	historyData := c.prepareImportData(r, "")
+	if historyData.Error != nil {
+		c.RenderPartialImport(w, r, historyData)
+	}
+	historyData.Options.Separator = csv.SpaceLike
+	historyData.Options.Columns = nil
+	historyData.Options.Name = ""
+	historyData.Options.Date = ""
+	historyData.Options.CurrentDate = c.Accounts.CurrentDate()
+	historyData = prepareImportCsv(r, historyData)
+	c.RenderPartialImport(w, r, historyData)
+}
+
 func (c *Control) PrepareImportColumn(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	historyData := prepareImportData(r, p.ByName("columnId"))
+	historyData := c.prepareImportData(r, p.ByName("columnId"))
 	if historyData.Error != nil {
 		c.RenderPartialImport(w, r, historyData)
 	}
@@ -76,7 +91,7 @@ func (c *Control) PrepareImportColumn(w http.ResponseWriter, r *http.Request, p 
 }
 
 func (c *Control) ImportData(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	historyData := prepareImportData(r, "")
+	historyData := c.prepareImportData(r, "")
 	if historyData.Error != nil {
 		c.RenderPartialImport(w, r, historyData)
 	}
@@ -90,12 +105,13 @@ func (c *Control) ImportData(w http.ResponseWriter, r *http.Request, _ httproute
 	c.RenderPartialImport(w, r, historyData)
 }
 
-func prepareImportData(r *http.Request, columnId string) HistoryData {
+func (c *Control) prepareImportData(r *http.Request, columnId string) HistoryData {
 	historyData := HistoryData{
 		Separators:  csv.ColumnSeparators,
 		ColumnTypes: csv.ColumnTypes,
 		Options: csv.ImportOptions{
 			Separator: csv.SpaceLike,
+			Plugins:   c.ImportPlugins,
 		},
 	}
 	historyData.Error = r.ParseForm()
@@ -106,6 +122,11 @@ func prepareImportData(r *http.Request, columnId string) HistoryData {
 	if _, ok := csv.ColumnSeparators[separator]; ok {
 		historyData.Options.Separator = separator
 	}
+	plugin := formInput(r, "plugin")
+	if _, ok := c.ImportPlugins[plugin]; ok {
+		historyData.Options.Plugin = plugin
+	}
+
 	historyData.Csv = formInput(r, "csv")
 	historyData.Options.Name = formInput(r, "name")
 	historyData.Options.Date = formInput(r, "date")

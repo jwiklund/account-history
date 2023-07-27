@@ -7,14 +7,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jwiklund/ah/csv"
 	"github.com/jwiklund/ah/history"
 	"github.com/jwiklund/ah/view"
 )
 
 type Control struct {
-	AccountsPath string
-	Accounts     *history.Accounts
-	Renderer     view.Renderer
+	AccountsPath  string
+	Accounts      *history.Accounts
+	Renderer      view.Renderer
+	ImportPlugins map[string]csv.ImportPlugin
 }
 
 func templateName(base string, r *http.Request) string {

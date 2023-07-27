@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "cmd/ah/main.go",
+            "program": "cmd/account-history/main.go",
             "args": ["-app.assets=view/assets", "-app.accounts=example.txt"],
             "cwd": "."
         },
@@ -18,7 +18,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "cmd/ah/main.go",
+            "program": "cmd/account-history/main.go",
             "args": ["-app.assets=view/assets"],
             "cwd": "."
         }

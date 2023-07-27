@@ -23,6 +23,19 @@
                 {{end}}
               </select>
             </div>
+
+            {{if .Options.Plugins}}
+            <div class="col-6">
+              <label for="plugin" class="form-label">Plugin</label>
+              {{$plugin := .Options.Plugin}}
+              <select name="plugin" class="form-control" hx-trigger="change" hx-post="/import/plugin">
+                <option value="" {{if eq $plugin ""}}selected{{end}}>None</option>
+                {{range $k, $v := .Options.Plugins}}
+                <option value="{{$k}}" {{if eq $k $plugin}}selected{{end}}>{{$k}}</option>
+                {{end}}
+              </select>
+            </div>
+            {{end}}
           </div>
 
           <div class="row">
