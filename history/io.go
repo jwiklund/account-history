@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 
 	"gopkg.in/yaml.v3"
@@ -43,6 +44,11 @@ func LoadFrom(reader io.Reader) (*Accounts, error) {
 }
 
 func (a *Accounts) Save(filename string) error {
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+		bak := strings.Join([]string{filename, "bak"}, ".")
+		copy(filename, bak)
+	}
+
 	writer, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -59,4 +65,22 @@ func (a *Accounts) Save(filename string) error {
 		}
 	}
 	return encoder.Close()
+}
+
+func copy(from, to string) {
+	in, err := os.Open(from)
+	if err != nil {
+		fmt.Printf("Could not write backup: %v\n", err)
+		return
+	}
+	defer in.Close()
+	out, err := os.Create(to)
+	if err != nil {
+		fmt.Printf("Could not write backup: %v\n", err)
+		return
+	}
+	_, err = io.Copy(out, in)
+	if err != nil {
+		fmt.Printf("Could not write backup: %v\n", err)
+	}
 }
