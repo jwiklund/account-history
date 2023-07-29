@@ -5,6 +5,22 @@
     {{block "index.body.html" .}}
     <div id="body" class="container" hx-boost="true">
       {{template "nav.html" "index"}}
+      {{if or .Tags .Tag}}
+      <ul class="nav">
+        <li class="nav-item"><a class="nav-link disabled" aria-disabled="true">Tag</a></li>
+        {{$tag := .Tag}}
+        {{if ne $tag ""}}
+        <li class="nav-item">
+          <a href="/" class="nav-link">All</a>
+        </li>
+        {{end}}
+        {{range .Tags}}
+        <li class="nav-item">
+          <a href="/?tag={{.}}" class="nav-link{{if eq $tag .}} active{{end}}">{{.}}</a>
+        </li>
+        {{end}}
+      </ul>
+      {{end}}
       <div class="row">
         <div class="col"><b>Total Assets</b> {{human .Total.Assets}}</div>
         <div class="col"><b>Total Change</b> {{human .Total.Change}}</div>
@@ -50,6 +66,7 @@
               }]
             },
             options: {
+              animation: false,
               scales: {
                 yYear: {
                   type: "linear",

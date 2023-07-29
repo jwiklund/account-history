@@ -9,14 +9,16 @@ import (
 )
 
 func (c *Control) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts)); err != nil {
+	tag := r.URL.Query().Get("tag")
+	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts, tag)); err != nil {
 		fmt.Fprintf(w, "Could not render index: %v", err)
 	}
 }
 
 func (c *Control) Save(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	c.Accounts.Save(c.AccountsPath)
-	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts)); err != nil {
+	tag := r.URL.Query().Get("tag")
+	if err := c.Renderer.Render(templateName("index", r), w, summarize(*c.Accounts, tag)); err != nil {
 		fmt.Fprintf(w, "Could not render index: %v", err)
 	}
 }
@@ -24,6 +26,8 @@ func (c *Control) Save(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 type IndexData struct {
 	Years []history.SummaryEntry
 	Total Total
+	Tag   string
+	Tags  []string
 }
 
 type Total struct {
@@ -32,9 +36,11 @@ type Total struct {
 	Change   int
 }
 
-func summarize(a history.Accounts) IndexData {
-	var data IndexData
-	data.Years = a.Summary()
+func summarize(a history.Accounts, tag string) IndexData {
+	data := IndexData{
+		Tag: tag,
+	}
+	data.Years, data.Tags = a.Summary(data.Tag)
 
 	var totalSum int
 	var totalIncrease int

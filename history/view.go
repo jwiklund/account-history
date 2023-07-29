@@ -3,6 +3,9 @@ package history
 import (
 	"fmt"
 	"sort"
+	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 func (a *Accounts) AccountHistory(slug string) (string, []SummaryEntry, error) {
@@ -39,12 +42,31 @@ type SummaryEntry struct {
 	Increase int
 }
 
-func (a *Accounts) Summary() []SummaryEntry {
+func (a *Accounts) Summary(tag string) ([]SummaryEntry, []string) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
+	seenTags := make(map[string]bool)
 	summary := make(map[string]*SummaryEntry)
 	for _, a := range a.accounts {
+		if tag != "" && !slices.Contains(a.Tags, tag) {
+			continue
+		}
+		oneoff := false
+		for _, accountTag := range a.Tags {
+			if accountTag == Oneoff {
+				oneoff = true
+			}
+			if strings.HasSuffix(accountTag, Oneoff) {
+				continue
+			}
+			if tag == "" && !strings.Contains(accountTag, "/") {
+				seenTags[accountTag] = true
+			}
+			if tag != "" && strings.HasPrefix(accountTag, strings.Join([]string{tag, "/"}, "")) {
+				seenTags[accountTag] = true
+			}
+		}
 		for _, h := range a.History {
 			entry, ok := summary[h.Date]
 			if !ok {
@@ -54,7 +76,7 @@ func (a *Accounts) Summary() []SummaryEntry {
 				summary[h.Date] = entry
 			}
 			entry.End = entry.End + h.Amount
-			if a.Oneoff {
+			if oneoff {
 				entry.Oneoff = entry.Oneoff - h.Change
 				entry.Change = entry.Change + h.Change
 			} else {
@@ -62,6 +84,11 @@ func (a *Accounts) Summary() []SummaryEntry {
 			}
 		}
 	}
+	var tags []string
+	for accountTag := range seenTags {
+		tags = append(tags, accountTag)
+	}
+	sort.Strings(tags)
 	var dates []string
 	for date := range summary {
 		dates = append(dates, date)
@@ -76,7 +103,7 @@ func (a *Accounts) Summary() []SummaryEntry {
 		current = entry.End
 		result = append(result, *entry)
 	}
-	return result
+	return result, tags
 }
 
 type CurrentEntry struct {

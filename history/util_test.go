@@ -40,14 +40,18 @@ func TestSortAccountEmpty(t *testing.T) {
 }
 
 func makeAccount(name, year string, end int, oneoff bool) Account {
+	var tags []string
+	if oneoff {
+		tags = append(tags, Oneoff)
+	}
 	return Account{
-		Name:   name,
-		Oneoff: oneoff,
+		Name: name,
 		History: []History{
 			{
 				Date:   year,
 				Amount: end,
 			},
 		},
+		Tags: tags,
 	}
 }

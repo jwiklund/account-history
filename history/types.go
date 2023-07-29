@@ -2,6 +2,10 @@ package history
 
 import "sync"
 
+const (
+	Oneoff string = "Oneoff"
+)
+
 type Accounts struct {
 	accounts []Account
 	lock     *sync.Mutex
@@ -10,7 +14,7 @@ type Accounts struct {
 type Account struct {
 	Name    string    `yaml:"name"`
 	History []History `yaml:"history"`
-	Oneoff  bool      `yaml:"oneoff"`
+	Tags    []string  `yaml:"tags"`
 }
 
 type History struct {

@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 var nameToSlugRegex = regexp.MustCompile("[^a-z0-9]+")
@@ -48,8 +50,8 @@ func sortAccounts(accounts []Account) []Account {
 		indexes[i] = i
 	}
 	sort.Slice(indexes, func(i, j int) bool {
-		firstOneoff := accounts[indexes[i]].Oneoff
-		secondOneoff := accounts[indexes[j]].Oneoff
+		firstOneoff := slices.Contains(accounts[indexes[i]].Tags, Oneoff)
+		secondOneoff := slices.Contains(accounts[indexes[j]].Tags, Oneoff)
 		bothOneoff := firstOneoff && secondOneoff
 		eitherOneoff := firstOneoff || secondOneoff
 		if !bothOneoff && eitherOneoff {

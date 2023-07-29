@@ -93,7 +93,7 @@ func TestSummary(t *testing.T) {
 			},
 		},
 	}
-	summary := accounts.Summary()
+	summary, _ := accounts.Summary("")
 	assert.Equal(t, []SummaryEntry{
 		{
 			Year:     "2022",

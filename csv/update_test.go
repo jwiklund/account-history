@@ -39,13 +39,14 @@ func TestUpdateEmptyWithAccount(t *testing.T) {
 	if err != nil {
 		return
 	}
+	summary, _ := empty.Summary("")
 	assert.Equal(t, []history.SummaryEntry{{
 		Year:     "2022",
 		Start:    0,
 		End:      1,
 		Change:   0,
 		Increase: 1,
-	}}, empty.Summary())
+	}}, summary)
 	assert.Equal(t, []history.CurrentEntry{{
 		Name:     "name",
 		Slug:     "name",
