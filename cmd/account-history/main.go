@@ -37,7 +37,7 @@ func main() {
 	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
 		EnvPrefix:  "APP",
 		FlagPrefix: "app",
-		Files:      []string{strings.Join([]string{userDir, "ah", "config.yaml"}, string(os.PathSeparator))},
+		Files:      []string{strings.Join([]string{userDir, "account-history", "config.yaml"}, string(os.PathSeparator))},
 		FileDecoders: map[string]aconfig.FileDecoder{
 			".yaml": aconfigyaml.New(),
 		},
@@ -62,7 +62,7 @@ func loadPluginConfig(userDir, path string) (PluginConfig, error) {
 	}
 	var pluginPath string
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		pluginPath = strings.Join([]string{userDir, "ah", path}, string(os.PathSeparator))
+		pluginPath = strings.Join([]string{userDir, "account-history", path}, string(os.PathSeparator))
 		if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
 			if path == "plugins.yaml" {
 				return config, nil
