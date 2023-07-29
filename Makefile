@@ -15,7 +15,7 @@ DEV_ACCOUNTS := -app.accounts=example.txt
 .PHONY: all
 all: dev
 
-account-history: $(shell find . -name "*.html" -o -name "*.go")
+install: $(shell find . -name "*.html" -o -name "*.go")
 > go install ./cmd/account-history
 
 .PHONY: dev
