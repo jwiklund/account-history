@@ -1,6 +1,6 @@
 module github.com/jwiklund/ah
 
-go 1.21rc3
+go 1.21
 
 require (
 	github.com/cristalhq/aconfig v0.18.4
