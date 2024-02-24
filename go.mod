@@ -3,12 +3,12 @@ module github.com/jwiklund/ah
 go 1.21
 
 require (
-	github.com/cristalhq/aconfig v0.18.4
+	github.com/cristalhq/aconfig v0.18.5
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
+	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	gopkg.in/yaml.v3 v3.0.1
 )
 

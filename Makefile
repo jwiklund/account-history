@@ -30,5 +30,10 @@ test:
 test-w: $(shell bin/has reflex)
 > reflex -d none -s -R vendor. -r '\.go$$|\.yaml$$' -- go test ./...
 
+.PHONY: update
+update:
+> go get -u ./...
+> go mod tidy
+
 install-reflex:
 > go install github.com/cespare/reflex@latest
