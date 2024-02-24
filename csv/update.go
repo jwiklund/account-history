@@ -2,6 +2,7 @@ package csv
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/jwiklund/ah/history"
 	"golang.org/x/exp/slices"
@@ -19,8 +20,8 @@ type historyUpdates []historyUpdate
 
 func (h ImportRows) Update(opts ImportOptions, accounts *history.Accounts) error {
 	for slug, updates := range h.rowsBySlug(opts) {
-		slices.SortFunc(updates, func(a, b historyUpdate) bool {
-			return a.date < b.date
+		slices.SortFunc(updates, func(a, b historyUpdate) int {
+			return strings.Compare(a.date, b.date)
 		})
 		err := accounts.UpdateHistoryBySlug(slug, updates.update)
 		if err != nil {
@@ -63,8 +64,8 @@ func (h ImportRows) rowsBySlug(opts ImportOptions) map[string]historyUpdates {
 }
 
 func (u historyUpdates) update(h []history.History) ([]history.History, error) {
-	slices.SortFunc(h, func(a, b history.History) bool {
-		return a.Date < b.Date
+	slices.SortFunc(h, func(a, b history.History) int {
+		return strings.Compare(a.Date, b.Date)
 	})
 	historyIndex := 0
 	var result []history.History
