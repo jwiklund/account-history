@@ -33,8 +33,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("Warning, could not determine home config dir: %v", err)
 	}
-	var cfg Config
-	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
+	var config Config
+	loader := aconfig.LoaderFor(&config, aconfig.Config{
 		EnvPrefix:  "APP",
 		FlagPrefix: "app",
 		Files:      []string{strings.Join([]string{userDir, "account-history", "config.yaml"}, string(os.PathSeparator))},
@@ -47,12 +47,12 @@ func main() {
 	if err := loader.Load(); err != nil {
 		panic(err)
 	}
-	pluginConfig, err := loadPluginConfig(userDir, cfg.Plugins)
+	pluginConfig, err := loadPluginConfig(userDir, config.Plugins)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	serve(cfg, pluginConfig, *initHistory)
+	serve(config, pluginConfig, *initHistory)
 }
 
 func loadPluginConfig(userDir, path string) (PluginConfig, error) {
@@ -83,13 +83,13 @@ func loadPluginConfig(userDir, path string) (PluginConfig, error) {
 	return config, err
 }
 
-func serve(cfg Config, plugins PluginConfig, initHistory bool) {
-	accounts, err := history.Load(cfg.Accounts, initHistory)
+func serve(config Config, plugins PluginConfig, initHistory bool) {
+	accounts, err := history.Load(config.Accounts, initHistory)
 	if err != nil {
 		fmt.Printf("could not load history %v\n", err)
 		return
 	}
-	renderer, err := view.New(cfg.Assets)
+	renderer, err := view.New(config.Assets)
 	if err != nil {
 		fmt.Printf("could not initialize view %v\n", err)
 		return
@@ -99,7 +99,7 @@ func serve(cfg Config, plugins PluginConfig, initHistory bool) {
 		importPlugins[plugin.Name] = plugin
 	}
 	controller := control.Control{
-		AccountsPath:  cfg.Accounts,
+		AccountsPath:  config.Accounts,
 		Accounts:      accounts,
 		Renderer:      renderer,
 		ImportPlugins: importPlugins,
@@ -125,6 +125,6 @@ func serve(cfg Config, plugins PluginConfig, initHistory bool) {
 	router.POST("/import/column/:columnId", controller.PrepareImportColumn)
 	router.POST("/import", controller.ImportData)
 
-	fmt.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Printf("Listening on http://localhost:%d", config.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), router))
 }
