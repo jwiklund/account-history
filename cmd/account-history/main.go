@@ -105,6 +105,7 @@ func serve(config Config, plugins PluginConfig, initHistory bool) {
 		ImportPlugins: importPlugins,
 	}
 	router := httprouter.New()
+	router.GET("/favicon.ico", controller.Resource("favicon.ico"))
 	router.GET("/", controller.Index)
 	router.POST("/save", controller.Save)
 

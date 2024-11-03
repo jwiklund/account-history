@@ -14,6 +14,7 @@ import (
 
 type Renderer interface {
 	Render(name string, wr io.Writer, data any) error
+	Resource(name string, wr io.Writer) error
 }
 
 type CheckRenderer interface {
@@ -32,7 +33,7 @@ func New(assetsPath string) (Renderer, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not parse templates: %w", err)
 		}
-		renderer := eagerRenderer{templates}
+		renderer := eagerRenderer{templates, assets.EmbedFs}
 		return renderer, check(renderer)
 	}
 	renderer := lazyRenderer{os.DirFS(assetsPath)}
@@ -45,14 +46,38 @@ func check(r Renderer) error {
 
 type eagerRenderer struct {
 	templates *template.Template
+	fs        fs.FS
 }
 
 func (e eagerRenderer) Render(name string, wr io.Writer, data any) error {
 	return e.templates.ExecuteTemplate(wr, name, data)
 }
 
+func (e eagerRenderer) Resource(name string, wr io.Writer) error {
+	return resource(e.fs, name, wr)
+}
+
 type lazyRenderer struct {
 	fs fs.FS
+}
+
+func (l lazyRenderer) Resource(name string, wr io.Writer) error {
+	return resource(l.fs, name, wr)
+}
+
+func resource(fs fs.FS, name string, wr io.Writer) error {
+	f, err := fs.Open(name)
+	if err != nil {
+		fmt.Printf("Could not open %s: %v\n", name, err)
+		return err
+	}
+	defer f.Close()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	_, err = wr.Write(data)
+	return err
 }
 
 func (l lazyRenderer) Render(name string, wr io.Writer, data any) error {

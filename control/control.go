@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/jwiklund/ah/csv"
 	"github.com/jwiklund/ah/history"
 	"github.com/jwiklund/ah/view"
@@ -17,6 +18,13 @@ type Control struct {
 	Accounts      *history.Accounts
 	Renderer      view.Renderer
 	ImportPlugins map[string]csv.ImportPlugin
+}
+
+func (c *Control) Resource(name string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		w.Header().Add("Content-Type", "image/x-icon")
+		c.Renderer.Resource(name, w)
+	}
 }
 
 func templateName(base string, r *http.Request) string {

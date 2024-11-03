@@ -2,5 +2,5 @@ package assets
 
 import "embed"
 
-//go:embed *.html
+//go:embed *.html *.ico
 var EmbedFs embed.FS
