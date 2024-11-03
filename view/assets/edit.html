@@ -21,8 +21,8 @@
           <tr id="{{.Slug}}">
             <th scope="row"><a href="/edit/account/{{.Slug}}">{{.Name}}</a></th>
             <td class="text-end">{{.Start}}</td>
-            <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
-            <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:500ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>
+            <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:5000ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
+            <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:5000ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>
             <td class="text-end">{{.Increase}}</td>
           </tr>
           {{end}}
