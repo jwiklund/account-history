@@ -86,3 +86,19 @@ func (a *Accounts) UpdateHistoryBySlug(slug string, update func([]History) ([]Hi
 	}
 	return fmt.Errorf("No such account: %s", slug)
 }
+
+func (a *Accounts) AddYear(year string) error {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+
+	for i, account := range a.accounts {
+		sortHistory(account.History)
+		last := account.History[len(account.History)-1]
+		if last.Date != year {
+			account.History = append(account.History, History{Date: year, Change: 0, Amount: last.Amount})
+			a.accounts[i] = account
+		}
+	}
+
+	return nil
+}

@@ -44,6 +44,7 @@ func main() {
 	})
 	flagSet := loader.Flags()
 	initHistory := flagSet.Bool("init-history", false, "Initialize history if it does not exist")
+	addYear := flagSet.String("add-year", "", "Add year")
 	if err := loader.Load(); err != nil {
 		panic(err)
 	}
@@ -52,7 +53,7 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	serve(config, pluginConfig, *initHistory)
+	serve(config, pluginConfig, *initHistory, *addYear)
 }
 
 func loadPluginConfig(userDir, path string) (PluginConfig, error) {
@@ -83,11 +84,17 @@ func loadPluginConfig(userDir, path string) (PluginConfig, error) {
 	return config, err
 }
 
-func serve(config Config, plugins PluginConfig, initHistory bool) {
+func serve(config Config, plugins PluginConfig, initHistory bool, addYear string) {
 	accounts, err := history.Load(config.Accounts, initHistory)
 	if err != nil {
 		fmt.Printf("could not load history %v\n", err)
 		return
+	}
+	if addYear != "" {
+		err = accounts.AddYear(addYear)
+		if err != nil {
+			fmt.Printf("could not add year %s: %v\n", addYear, err)
+		}
 	}
 	renderer, err := view.New(config.Assets)
 	if err != nil {
