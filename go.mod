@@ -1,16 +1,14 @@
 module github.com/jwiklund/ah
 
-go 1.22.0
-
-toolchain go1.23.1
+go 1.25
 
 require (
-	github.com/cristalhq/aconfig v0.18.6
+	github.com/cristalhq/aconfig v0.19.0
 	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
 	gopkg.in/yaml.v3 v3.0.1
 )
 
