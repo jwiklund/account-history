@@ -113,8 +113,8 @@ func (c *Control) prepareImportData(r *http.Request, columnId string) HistoryDat
 			Separator: csv.SpaceLike,
 			Plugins:   c.ImportPlugins,
 		},
-	}
-	historyData.Error = r.ParseForm()
+
+		Error: r.ParseForm()}
 	if historyData.Error != nil {
 		return historyData
 	}
