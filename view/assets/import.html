@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
   {{template "head.html"}}
-  <body hx-ext="morph">
+  <body>
     {{block "import.body.html" .}}
-    <div id="body" class="container" hx-boost="true">
+    <div id="body" class="container" hx-boost:inherited="true">
       {{template "nav.html" "import"}}
-      <form action="/import/prepare" method="POST" hx-target="#import">
+      <form action="/import/prepare" method="POST" hx-target:inherited="#import">
         <div class="mb-3">
           <label for="csv" class="form-label">CSV</label>
           <textarea name="csv" class="form-control" rows="5" placeholder="CSV" aria-label="CSV" hx-trigger="change" hx-post="/import/prepare">{{.Csv}}</textarea>

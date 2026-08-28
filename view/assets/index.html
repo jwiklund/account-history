@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
   {{template "head.html"}}
-  <body hx-ext="morph">
+  <body>
     {{block "index.body.html" .}}
-    <div id="body" class="container" hx-boost="true">
+    <div id="body" class="container" hx-boost:inherited="true">
       {{template "nav.html" "index"}}
       {{if or .Tags .Tag}}
       <ul class="nav">
@@ -86,9 +86,9 @@
          });
         }
         if (document.currentChartFn) {
-          document.body.removeEventListener("htmx:load", window.currentChartFn)
+          document.body.removeEventListener("htmx:after:process", window.currentChartFn)
         }
-        document.body.addEventListener("htmx:load", chart)
+        document.body.addEventListener("htmx:after:process", chart)
         document.currentChartFn = chart
       </script>
     </div>

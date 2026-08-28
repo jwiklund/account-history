@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
   {{template "head.html"}}
-  <body hx-ext="morph">
+  <body>
     {{block "edit.body.html" .}}
-    <div id="body" class="container" hx-boost="true">
+    <div id="body" class="container" hx-boost:inherited="true">
       {{template "nav.html" "edit"}}
       <table class="table">
         <thead>
@@ -21,8 +21,8 @@
           <tr id="{{.Slug}}">
             <th scope="row"><a href="/edit/account/{{.Slug}}">{{.Name}}</a></th>
             <td class="text-end">{{.Start}}</td>
-            <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:5000ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.End}}"/></td>
-            <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:5000ms" hx-target="#body" hx-swap="morph" name="{{.Slug}}" value="{{.Change}}"/></td>
+            <td><input type=text hx-post="/edit/amount" hx-trigger="keyup changed delay:5000ms, keyup[key=='Enter']" hx-target="#body" hx-swap="outerMorph" name="{{.Slug}}" value="{{.End}}"/></td>
+            <td><input type=text hx-post="/edit/change" hx-trigger="keyup changed delay:5000ms, keyup[key=='Enter']" hx-target="#body" hx-swap="outerMorph" name="{{.Slug}}" value="{{.Change}}"/></td>
             <td class="text-end">{{.Increase}}</td>
           </tr>
           {{end}}

@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
   {{template "head.html"}}
-  <body hx-ext="morph">
+  <body>
     {{block "edit.account.body.html" .}}
-    <div id="body" class="container" hx-boost="true">
+    <div id="body" class="container" hx-boost:inherited="true">
       {{template "nav.html" "edit"}}
       <div class="row">
         <div class="col"><legend>{{.Name}}</legend></div>
@@ -27,8 +27,8 @@
           <tr id="{{.Year}}">
             <th scope="row">{{.Year}}</a></th>
             <td class="text-end">{{human .Start}}</td>
-            <td><input type=text hx-post="/edit/account/{{$slug}}/amount/{{.Year}}" hx-trigger="change" hx-target="#body" hx-swap="morph" name="{{.Year}}-amount" value="{{human .End}}"/></td>
-            <td><input type=text hx-post="/edit/account/{{$slug}}/change/{{.Year}}" hx-trigger="change" hx-target="#body" hx-swap="morph" name="{{.Year}}-change" value="{{human .Change}}"/></td>
+            <td><input type=text hx-post="/edit/account/{{$slug}}/amount/{{.Year}}" hx-trigger="change, keyup[key=='Enter']" hx-target="#body" hx-swap="outerMorph" name="{{.Year}}-amount" value="{{human .End}}"/></td>
+            <td><input type=text hx-post="/edit/account/{{$slug}}/change/{{.Year}}" hx-trigger="change, keyup[key=='Enter']" hx-target="#body" hx-swap="outerMorph" name="{{.Year}}-change" value="{{human .Change}}"/></td>
             <td class="text-end">{{human .Increase}}</td>
           </tr>
           {{end}}
